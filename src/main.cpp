@@ -28,8 +28,7 @@ competition Competition;
 digital_out DigitalOutA = digital_out(Brain.ThreeWirePort.A);
 digital_out DigitalOutB = digital_out(Brain.ThreeWirePort.B);
 
-//DigitalOutA.set(true);
-//DigitalOutA.set(false);
+
 
 /*---------------------------------------------------------------------------*/
 /*                          Pre-Autonomous Functions                         */
@@ -62,9 +61,15 @@ void pre_auton(void) {
 /*---------------------------------------------------------------------------*/
 
 void autonomous(void) {
+  DigitalOutA.set(true);
+  DigitalOutB.set(true);
+  this_thread::sleep_for(chrono::seconds(3));
+  DigitalOutA.set(false);
+  DigitalOutB.set(false);
   // ..........................................................................
   // Insert autonomous user code here.
   // ..........................................................................
+  
 }
 
 /*---------------------------------------------------------------------------*/
