@@ -26,12 +26,7 @@ competition Competition;
 // define your global instances of motors and other devices here
 triport ThreeWirePort = vex::triport( vex::PORT22 );
 digital_out DigitalOutA = vex::digital_out(ThreeWirePort.A);
-/*
-digital_out DigitalOutA = digital_out(Brain.ThreeWirePort.A);
-digital_out DigitalOutB = digital_out(Brain.ThreeWirePort.B);
-*/
-//DigitalOutA.set(true);
-//DigitalOutA.set(false);
+
 
 /*---------------------------------------------------------------------------*/
 /*                          Pre-Autonomous Functions                         */
@@ -48,7 +43,6 @@ void MoveStraight(int speed, int distance) {
 void pre_auton(void) {
   // Initializing Robot Configuration. DO NOT REMOVE!
   vexcodeInit();
-  
   // All activities that occur before the competition starts
   // Example: clearing encoders, setting servo positions, ...
 }
@@ -82,12 +76,14 @@ void autonomous(void) {
 
 void usercontrol(void) {
   // User control code here, inside the loop
-  
+  IntakeMotor.setMaxTorque(50, pct);
   int leftsidepower;
   int rightsidepower;
   float limiter = 1; 
   bool goalintakeopen = false;
+  bool buttonPreviouslyPressed = false;
   while (true) {
+    
     //Drive Control
     leftsidepower = (Controller1.Axis3.position(percent) + Controller1.Axis1.position(percent))*limiter;
     rightsidepower = (Controller1.Axis3.position(percent) - Controller1.Axis1.position(percent))*limiter;
@@ -97,20 +93,26 @@ void usercontrol(void) {
     RightMotor1.spin(directionType::fwd, rightsidepower, velocityUnits::pct);
     RightMotor2.spin(directionType::fwd, rightsidepower, velocityUnits::pct);
     RightMotor3.spin(directionType::fwd, rightsidepower, velocityUnits::pct);
-    if(Controller1.ButtonA.pressing() & limiter == 1) { //If L2 is pressed while the limiter is 1
+    if(Controller1.ButtonA.pressing() && limiter == 1) { //If L2 is pressed while the limiter is 1
       limiter = 0.75;
     }
-    else if(Controller1.ButtonA.pressing() & limiter == 0.75) { //If R2 is pressed while the limiter is 0.75
+    else if(Controller1.ButtonA.pressing() && limiter == 0.75) { //If R2 is pressed while the limiter is 0.75
       limiter = 1;
     }
-    if(Controller1.ButtonB.pressing()/* & goalintakeopen == true*/) { //If L2 is pressed while the limiter is 1
+
+
+    if(Controller1.ButtonB.pressing() && goalintakeopen == true && buttonPreviouslyPressed == false) { //If L2 is pressed while the limiter is 1
       DigitalOutA.set(false);
       goalintakeopen = false;
     }
-    else if(Controller1.ButtonY.pressing()/* & goalintakeopen == false*/) { //If L2 is pressed while the limiter is 1
+    else if(Controller1.ButtonB.pressing() && goalintakeopen == false && buttonPreviouslyPressed == false) { //If L2 is pressed while the limiter is 1
       DigitalOutA.set(true);
       goalintakeopen = true;
     }
+    if (Controller1.ButtonB.pressing()) {buttonPreviouslyPressed = true;}
+    else {buttonPreviouslyPressed = false;}
+
+
     //Conveyor controls, L2 and R2 run foward and backward
     if(Controller1.ButtonR2.pressing()) {
       ConveyorMotor.spin(directionType::fwd, 100, velocityUnits::pct); 
