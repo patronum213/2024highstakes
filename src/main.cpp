@@ -83,10 +83,18 @@ void usercontrol(void) {
   bool goalintakeopen = false;
   bool buttonPreviouslyPressed = false;
   while (true) {
-    
-    //Drive Control
-    leftsidepower = (Controller1.Axis3.position(percent) + Controller1.Axis1.position(percent))*limiter;
-    rightsidepower = (Controller1.Axis3.position(percent) - Controller1.Axis1.position(percent))*limiter;
+    //Driving Control
+    int deadzonepct  = 15;
+    int Axis3Dead = 
+    Controller1.Axis3.position(percent) > 0 ? (Controller1.Axis3.position(percent) - deadzonepct) * 100/deadzonepct : 
+    Controller1.Axis3.position(percent) < 0 ? (Controller1.Axis3.position(percent) + deadzonepct) * 100/deadzonepct : 0;
+    int Axis1Dead = 
+    Controller1.Axis1.position(percent) > 0 ? (Controller1.Axis1.position(percent) - deadzonepct) * 100/deadzonepct : 
+    Controller1.Axis1.position(percent) < 0 ? (Controller1.Axis1.position(percent) + deadzonepct) * 100/deadzonepct : 0;
+    leftsidepower = (Axis3Dead + Axis1Dead)*limiter;
+    rightsidepower = (Axis3Dead - Axis1Dead)*limiter;
+    //if (leftsidepower > rightsidepower) {rightsidepower = 100/leftsidepower;};
+    //if (rightsidepower > leftsidepower) {leftsidepower = 100/rightsidepower;};
     LeftMotor1.spin(directionType::fwd, leftsidepower, velocityUnits::pct); 
     LeftMotor2.spin(directionType::fwd, leftsidepower, velocityUnits::pct); 
     LeftMotor3.spin(directionType::fwd, leftsidepower, velocityUnits::pct);
@@ -100,7 +108,7 @@ void usercontrol(void) {
       limiter = 1;
     }
 
-
+    //intake and conveyor
     if(Controller1.ButtonB.pressing() && goalintakeopen == true && buttonPreviouslyPressed == false) { //If L2 is pressed while the limiter is 1
       DigitalOutA.set(false);
       goalintakeopen = false;
@@ -134,6 +142,7 @@ void usercontrol(void) {
       ConveyorMotor.spin(directionType::fwd, 0, velocityUnits::pct);
       IntakeMotor.spin(directionType::fwd, 0, velocityUnits::pct);
     }
+
     Brain.Screen.setCursor(1, 1);
     Brain.Screen.print("limiter = %.2f  \n",limiter);
     wait(20, msec); // Sleep the task for a short amount of time to
