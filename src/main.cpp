@@ -17,6 +17,8 @@
 // ---- END VEXCODE CONFIGURED DEVICES ----
 
 #include "vex.h"
+#include <cmath>
+#include <iostream>
 
 using namespace vex;
 
@@ -39,6 +41,14 @@ digital_out DigitalOutA = vex::digital_out(ThreeWirePort.A);
 /*---------------------------------------------------------------------------*/
 void MoveStraight(int speed, int distance) {
   
+};
+int exponent(double base, int exponent) {
+    double product = 1;
+    for (size_t i = 0; i < exponent; i++)
+    {
+      product *= base; 
+    }
+      
 };
 void pre_auton(void) {
   // Initializing Robot Configuration. DO NOT REMOVE!
@@ -79,62 +89,65 @@ void usercontrol(void) {
   IntakeMotor.setMaxTorque(50, pct);
   int leftsidepower;
   int rightsidepower;
-  float limiter = 1; 
+  float FBsensitivity = 1;
+  float LRsensitivity = 0.7; 
   bool goalintakeopen = false;
   bool buttonPreviouslyPressed = false;
   while (true) {
     //Driving Control
+    //controller dead zone
     int deadzonepct  = 15;
-    int Axis3Dead = 
+    int Axis3 = 
     Controller1.Axis3.position(percent) > 0 ? (Controller1.Axis3.position(percent) - deadzonepct) * 100/deadzonepct : 
     Controller1.Axis3.position(percent) < 0 ? (Controller1.Axis3.position(percent) + deadzonepct) * 100/deadzonepct : 0;
-    int Axis1Dead = 
+    int Axis1 = 
     Controller1.Axis1.position(percent) > 0 ? (Controller1.Axis1.position(percent) - deadzonepct) * 100/deadzonepct : 
     Controller1.Axis1.position(percent) < 0 ? (Controller1.Axis1.position(percent) + deadzonepct) * 100/deadzonepct : 0;
-    leftsidepower = (Axis3Dead + Axis1Dead)*limiter;
-    rightsidepower = (Axis3Dead - Axis1Dead)*limiter;
-    //if (leftsidepower > rightsidepower) {rightsidepower = 100/leftsidepower;};
-    //if (rightsidepower > leftsidepower) {leftsidepower = 100/rightsidepower;};
+    //input power curve
+    double curveconstant = 1.05;
+    Axis1 = (100*(exponent(curveconstant, Axis1)-1))/(exponent(curveconstant, 100)-1);   
+    Axis3 = (100*(exponent(curveconstant, Axis3)-1))/(exponent(curveconstant, 100)-1);   
+    //sensitivity
+    Axis1 = Axis1*FBsensitivity;
+    Axis3 = Axis3*LRsensitivity;
+    //set motor powers
+    leftsidepower = (Axis3 + Axis1);
+    rightsidepower = (Axis3 - Axis1);
     LeftMotor1.spin(directionType::fwd, leftsidepower, velocityUnits::pct); 
     LeftMotor2.spin(directionType::fwd, leftsidepower, velocityUnits::pct); 
     LeftMotor3.spin(directionType::fwd, leftsidepower, velocityUnits::pct);
     RightMotor1.spin(directionType::fwd, rightsidepower, velocityUnits::pct);
     RightMotor2.spin(directionType::fwd, rightsidepower, velocityUnits::pct);
     RightMotor3.spin(directionType::fwd, rightsidepower, velocityUnits::pct);
-    if(Controller1.ButtonA.pressing() && limiter == 1) { //If L2 is pressed while the limiter is 1
-      limiter = 0.75;
-    }
-    else if(Controller1.ButtonA.pressing() && limiter == 0.75) { //If R2 is pressed while the limiter is 0.75
-      limiter = 1;
-    }
 
-    //intake and conveyor
-    if(Controller1.ButtonB.pressing() && goalintakeopen == true && buttonPreviouslyPressed == false) { //If L2 is pressed while the limiter is 1
+    //intake and conveyor (toggle by L2)
+    if(Controller1.ButtonL2.pressing() && goalintakeopen == true && buttonPreviouslyPressed == false) { //If L2 is pressed while the limiter is 1
       DigitalOutA.set(false);
       goalintakeopen = false;
     }
-    else if(Controller1.ButtonB.pressing() && goalintakeopen == false && buttonPreviouslyPressed == false) { //If L2 is pressed while the limiter is 1
+    else if(Controller1.ButtonL2.pressing() && goalintakeopen == false && buttonPreviouslyPressed == false) { //If L2 is pressed while the limiter is 1
       DigitalOutA.set(true);
       goalintakeopen = true;
     }
+
     if (Controller1.ButtonB.pressing()) {buttonPreviouslyPressed = true;}
     else {buttonPreviouslyPressed = false;}
 
 
-    //Conveyor controls, L2 and R2 run foward and backward
-    if(Controller1.ButtonR2.pressing()) {
+    //Conveyor & intake controls
+    if(Controller1.ButtonR1.pressing()) {//out
       ConveyorMotor.spin(directionType::fwd, 100, velocityUnits::pct); 
       IntakeMotor.spin(directionType::fwd, 100, velocityUnits::pct); 
     }
-    else if(Controller1.ButtonL2.pressing()) { 
+    else if(Controller1.ButtonR2.pressing()) { //in
       ConveyorMotor.spin(directionType::rev, 100, velocityUnits::pct); 
       IntakeMotor.spin(directionType::rev, 100, velocityUnits::pct); 
     }
-    else if(Controller1.ButtonR1.pressing()) {//low speed mode for testing bound to R1 and L1
+    else if(Controller1.ButtonR1.pressing() && Controller1.ButtonY.pressing()) {//low speed mode for testing while holding Y
       ConveyorMotor.spin(directionType::fwd, 25, velocityUnits::pct); 
       IntakeMotor.spin(directionType::fwd, 25, velocityUnits::pct); 
     }
-    else if(Controller1.ButtonL1.pressing()) { 
+    else if(Controller1.ButtonR2.pressing() && Controller1.ButtonY.pressing()) { 
       ConveyorMotor.spin(directionType::rev, 25, velocityUnits::pct); 
       IntakeMotor.spin(directionType::rev, 25, velocityUnits::pct); 
     }
@@ -144,7 +157,7 @@ void usercontrol(void) {
     }
 
     Brain.Screen.setCursor(1, 1);
-    Brain.Screen.print("limiter = %.2f  \n",limiter);
+    //Brain.Screen.print("limiter = %.2f  \n",limiter);
     wait(20, msec); // Sleep the task for a short amount of time to
                     // prevent wasted resources.
   }
