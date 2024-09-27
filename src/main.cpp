@@ -39,7 +39,46 @@ digital_out DigitalOutA = vex::digital_out(ThreeWirePort.A);
 /*  function is only called once after the V5 has been powered on and        */
 /*  not every time that the robot is disabled.                               */
 /*---------------------------------------------------------------------------*/
-void MoveStraight(int speed, int distance) {
+void MoveStraight(int speed, float distance) {
+  LeftMotor2.resetPosition();
+  RightMotor2.resetPosition();
+  float distancedeg = distance*4523.76;//4*pi*360
+  if (distancedeg > 0) {
+    while (!LeftMotor2.position(deg) > distance) {
+    LeftMotor1.spin(directionType::fwd, speed, velocityUnits::pct); 
+    LeftMotor2.spin(directionType::fwd, speed, velocityUnits::pct); 
+    LeftMotor3.spin(directionType::fwd, speed, velocityUnits::pct);
+    RightMotor1.spin(directionType::fwd, speed, velocityUnits::pct);
+    RightMotor2.spin(directionType::fwd, speed, velocityUnits::pct);
+    RightMotor3.spin(directionType::fwd, speed, velocityUnits::pct);
+    if (LeftMotor2.position(deg) > distance) {
+      LeftMotor1.stop(); 
+      LeftMotor2.stop(); 
+      LeftMotor3.stop();
+      RightMotor1.stop();
+      RightMotor2.stop();
+      RightMotor3.stop();
+      }
+    };
+  }
+  else if (distancedeg > 0) {
+    while (!LeftMotor2.position(deg) < distance) {
+    LeftMotor1.spin(directionType::rev, speed, velocityUnits::pct); 
+    LeftMotor2.spin(directionType::rev, speed, velocityUnits::pct); 
+    LeftMotor3.spin(directionType::rev, speed, velocityUnits::pct);
+    RightMotor1.spin(directionType::rev, speed, velocityUnits::pct);
+    RightMotor2.spin(directionType::rev, speed, velocityUnits::pct);
+    RightMotor3.spin(directionType::rev, speed, velocityUnits::pct);
+    if (LeftMotor2.position(deg) < distance) {
+      LeftMotor1.stop(); 
+      LeftMotor2.stop(); 
+      LeftMotor3.stop();
+      RightMotor1.stop();
+      RightMotor2.stop();
+      RightMotor3.stop();
+      }
+    };
+  }
   
 };
 int exponent(double base, int exponent) {
