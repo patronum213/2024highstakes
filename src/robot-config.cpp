@@ -11,14 +11,14 @@ brain  Brain;
 controller Controller1 = controller(primary);
 motor LeftMotor1 = motor(PORT1, ratio36_1, false);
 motor LeftMotor2 = motor(PORT2, ratio36_1, true);
-motor LeftMotor3 = motor(PORT3, ratio36_1, true);
+motor LeftMotor3 = motor(PORT12, ratio36_1, true);
 motor RightMotor1 = motor(PORT8, ratio36_1, true);
 motor RightMotor2 = motor(PORT9, ratio36_1, false);
 motor RightMotor3 = motor(PORT10, ratio36_1, false);
-motor ConveyorMotor = motor(PORT5, ratio18_1, true);
+motor ConveyorMotor = motor(PORT20, ratio18_1, true);
 motor IntakeMotor = motor(PORT6, ratio18_1, false);
 gyro TurnGyroSmart = gyro(Brain.ThreeWirePort.D);
-smartdrive Drivetrain= smartdrive(LeftMotor1, RightMotor1, TurnGyroSmart, 319.19, 320, 130, mm, 1);
+//smartdrive Drivetrain= smartdrive(LeftMotor1, RightMotor1, TurnGyroSmart, 319.19, 320, 130, mm, 1);
 //digital_out DigitalOutA = digital_out(Brain.ThreeWirePort.A);
 // VEXcode generated functions
 
@@ -31,7 +31,7 @@ smartdrive Drivetrain= smartdrive(LeftMotor1, RightMotor1, TurnGyroSmart, 319.19
  */
 void vexcodeInit( void ) {
   Brain.Screen.print("Device initialization...");
-  Brain.Screen.setCursor(2, 1);
+  Brain.Screen.setCursor(8, 1);
   // calibrate the drivetrain gyro
   wait(200, msec);
   TurnGyroSmart.startCalibration(1);

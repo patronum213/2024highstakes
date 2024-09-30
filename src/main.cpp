@@ -39,18 +39,64 @@ digital_out DigitalOutA = vex::digital_out(ThreeWirePort.A);
 /*  function is only called once after the V5 has been powered on and        */
 /*  not every time that the robot is disabled.                               */
 /*---------------------------------------------------------------------------*/
-void MoveStraight(int speed, float distance) {
+void MoveStraight(int speed, float distance, bool fowards) {
   LeftMotor2.resetPosition();
   RightMotor2.resetPosition();
-  float distancedeg = distance*4523.76;//4*pi*360
-  if (distancedeg > 0) {
-    while (!LeftMotor2.position(deg) > distance) {
+  float distancedeg = (distance/0.0349065556)*0.333333;//4*pi/360 and weird gearing constant
+  Brain.Screen.setCursor(4, 1);
+  Brain.Screen.print("dist in deg = %.2f  ", (distance/0.0349065556)*0.4285714286);
+  if (fowards) {
+    while (!(LeftMotor2.position(deg) > distancedeg)) {
     LeftMotor1.spin(directionType::fwd, speed, velocityUnits::pct); 
     LeftMotor2.spin(directionType::fwd, speed, velocityUnits::pct); 
     LeftMotor3.spin(directionType::fwd, speed, velocityUnits::pct);
     RightMotor1.spin(directionType::fwd, speed, velocityUnits::pct);
     RightMotor2.spin(directionType::fwd, speed, velocityUnits::pct);
     RightMotor3.spin(directionType::fwd, speed, velocityUnits::pct);
+    if (LeftMotor2.position(deg) > distancedeg) {
+      LeftMotor1.stop(); 
+      LeftMotor2.stop(); 
+      LeftMotor3.stop();
+      RightMotor1.stop();
+      RightMotor2.stop();
+      RightMotor3.stop();
+      }
+    };
+  }
+  else if (!fowards) {
+    while (!(LeftMotor2.position(deg) < -distancedeg)) {
+    LeftMotor1.spin(directionType::rev, speed, velocityUnits::pct); 
+    LeftMotor2.spin(directionType::rev, speed, velocityUnits::pct); 
+    LeftMotor3.spin(directionType::rev, speed, velocityUnits::pct);
+    RightMotor1.spin(directionType::rev, speed, velocityUnits::pct);
+    RightMotor2.spin(directionType::rev, speed, velocityUnits::pct);
+    RightMotor3.spin(directionType::rev, speed, velocityUnits::pct);
+    if (LeftMotor2.position(deg) < -distancedeg) {
+      LeftMotor1.stop(); 
+      LeftMotor2.stop(); 
+      LeftMotor3.stop();
+      RightMotor1.stop();
+      RightMotor2.stop();
+      RightMotor3.stop();
+      }
+    };
+  }
+  
+}
+/*
+void MoveTurning(int speed, int degrees, bool isturningright) {
+  LeftMotor2.resetPosition();
+  RightMotor2.resetPosition();
+  float degreesinwheeldeg = distance*4523.76;//4*pi*360
+  
+  if (distancedeg > 0) {
+    while (!(LeftMotor2.position(deg) > distance)) {
+    LeftMotor1.spin(directionType::fwd, speed, velocityUnits::pct); 
+    LeftMotor2.spin(directionType::fwd, speed, velocityUnits::pct); 
+    LeftMotor3.spin(directionType::fwd, speed, velocityUnits::pct);
+    RightMotor1.spin(directionType::rev, speed, velocityUnits::pct);
+    RightMotor2.spin(directionType::rev, speed, velocityUnits::pct);
+    RightMotor3.spin(directionType::rev, speed, velocityUnits::pct);
     if (LeftMotor2.position(deg) > distance) {
       LeftMotor1.stop(); 
       LeftMotor2.stop(); 
@@ -62,7 +108,7 @@ void MoveStraight(int speed, float distance) {
     };
   }
   else if (distancedeg > 0) {
-    while (!LeftMotor2.position(deg) < distance) {
+    while (!(LeftMotor2.position(deg) < distance)) {
     LeftMotor1.spin(directionType::rev, speed, velocityUnits::pct); 
     LeftMotor2.spin(directionType::rev, speed, velocityUnits::pct); 
     LeftMotor3.spin(directionType::rev, speed, velocityUnits::pct);
@@ -80,15 +126,15 @@ void MoveStraight(int speed, float distance) {
     };
   }
   
-};
-int exponent(double base, int exponent) {
+}*/
+double exponent(double base, double exponent) {
     double product = 1;
     for (size_t i = 0; i < exponent; i++)
     {
       product *= base; 
     }
-      
-};
+    return product;     
+}
 void pre_auton(void) {
   // Initializing Robot Configuration. DO NOT REMOVE!
   vexcodeInit();
@@ -107,6 +153,23 @@ void pre_auton(void) {
 /*---------------------------------------------------------------------------*/
 
 void autonomous(void) {
+  LeftMotor1.setStopping(brake); 
+  LeftMotor2.setStopping(brake); 
+  LeftMotor3.setStopping(brake);
+  RightMotor1.setStopping(brake);
+  RightMotor2.setStopping(brake);
+  RightMotor3.setStopping(brake);
+  DigitalOutA.set(true);
+  MoveStraight(40, 24, false); 
+  wait(200, msec);
+  DigitalOutA.set(false);
+  wait(200, msec);
+  ConveyorMotor.spin(directionType::rev, 100, velocityUnits::pct); 
+  IntakeMotor.spin(directionType::rev, 100, velocityUnits::pct); 
+  wait(1000, msec);
+  ConveyorMotor.stop();
+  IntakeMotor.stop();
+  MoveStraight(40, 20, false); 
   // ..........................................................................
   // Insert autonomous user code here.
   // ..........................................................................
@@ -124,31 +187,38 @@ void autonomous(void) {
 /*---------------------------------------------------------------------------*/
 
 void usercontrol(void) {
+  LeftMotor1.setStopping(coast); 
+  LeftMotor2.setStopping(coast); 
+  LeftMotor3.setStopping(coast);
+  RightMotor1.setStopping(coast);
+  RightMotor2.setStopping(coast);
+  RightMotor3.setStopping(coast);
   // User control code here, inside the loop
   IntakeMotor.setMaxTorque(50, pct);
   int leftsidepower;
   int rightsidepower;
-  float FBsensitivity = 1;
+  float FBsensitivity = 1.0;
   float LRsensitivity = 0.7; 
   bool goalintakeopen = false;
   bool buttonPreviouslyPressed = false;
+  LeftMotor2.resetPosition();
   while (true) {
     //Driving Control
     //controller dead zone
     int deadzonepct  = 15;
-    int Axis3 = 
-    Controller1.Axis3.position(percent) > 0 ? (Controller1.Axis3.position(percent) - deadzonepct) * 100/deadzonepct : 
-    Controller1.Axis3.position(percent) < 0 ? (Controller1.Axis3.position(percent) + deadzonepct) * 100/deadzonepct : 0;
-    int Axis1 = 
-    Controller1.Axis1.position(percent) > 0 ? (Controller1.Axis1.position(percent) - deadzonepct) * 100/deadzonepct : 
-    Controller1.Axis1.position(percent) < 0 ? (Controller1.Axis1.position(percent) + deadzonepct) * 100/deadzonepct : 0;
+    float Axis3 = Controller1.Axis3.position(percent) > deadzonepct ? ((Controller1.Axis3.position(percent) - deadzonepct)*1.00/(100-deadzonepct))*100 : 
+    Axis3 = Controller1.Axis3.position(percent) < -deadzonepct ? ((Controller1.Axis3.position(percent) + deadzonepct)*1.00/(100-deadzonepct))*100 : 0;
+    float Axis1 = Controller1.Axis1.position(percent) > deadzonepct ? ((Controller1.Axis1.position(percent) - deadzonepct)*1.00/(100-deadzonepct))*100 : 
+    Axis1 = Controller1.Axis1.position(percent) < -deadzonepct ? ((Controller1.Axis1.position(percent) + deadzonepct)*1.00/(100-deadzonepct))*100 : 0;
     //input power curve
-    double curveconstant = 1.05;
+    /*double curveconstant = 1.05;
     Axis1 = (100*(exponent(curveconstant, Axis1)-1))/(exponent(curveconstant, 100)-1);   
     Axis3 = (100*(exponent(curveconstant, Axis3)-1))/(exponent(curveconstant, 100)-1);   
+    */
+
     //sensitivity
-    Axis1 = Axis1*FBsensitivity;
-    Axis3 = Axis3*LRsensitivity;
+    Axis1 *= LRsensitivity;
+    Axis3 *= FBsensitivity;
     //set motor powers
     leftsidepower = (Axis3 + Axis1);
     rightsidepower = (Axis3 - Axis1);
@@ -169,20 +239,12 @@ void usercontrol(void) {
       goalintakeopen = true;
     }
 
-    if (Controller1.ButtonB.pressing()) {buttonPreviouslyPressed = true;}
+    if (Controller1.ButtonL2.pressing()) {buttonPreviouslyPressed = true;}
     else {buttonPreviouslyPressed = false;}
 
 
     //Conveyor & intake controls
-    if(Controller1.ButtonR1.pressing()) {//out
-      ConveyorMotor.spin(directionType::fwd, 100, velocityUnits::pct); 
-      IntakeMotor.spin(directionType::fwd, 100, velocityUnits::pct); 
-    }
-    else if(Controller1.ButtonR2.pressing()) { //in
-      ConveyorMotor.spin(directionType::rev, 100, velocityUnits::pct); 
-      IntakeMotor.spin(directionType::rev, 100, velocityUnits::pct); 
-    }
-    else if(Controller1.ButtonR1.pressing() && Controller1.ButtonY.pressing()) {//low speed mode for testing while holding Y
+    if(Controller1.ButtonR1.pressing() && Controller1.ButtonY.pressing()) {//low speed mode for testing while holding Y
       ConveyorMotor.spin(directionType::fwd, 25, velocityUnits::pct); 
       IntakeMotor.spin(directionType::fwd, 25, velocityUnits::pct); 
     }
@@ -190,13 +252,29 @@ void usercontrol(void) {
       ConveyorMotor.spin(directionType::rev, 25, velocityUnits::pct); 
       IntakeMotor.spin(directionType::rev, 25, velocityUnits::pct); 
     }
+    else if(Controller1.ButtonR1.pressing()) {//out
+      ConveyorMotor.spin(directionType::fwd, 100, velocityUnits::pct); 
+      IntakeMotor.spin(directionType::fwd, 100, velocityUnits::pct); 
+    }
+    else if(Controller1.ButtonR2.pressing()) { //in
+      ConveyorMotor.spin(directionType::rev, 100, velocityUnits::pct); 
+      IntakeMotor.spin(directionType::rev, 100, velocityUnits::pct); 
+    }
     else {
       ConveyorMotor.spin(directionType::fwd, 0, velocityUnits::pct);
       IntakeMotor.spin(directionType::fwd, 0, velocityUnits::pct);
     }
 
     Brain.Screen.setCursor(1, 1);
-    //Brain.Screen.print("limiter = %.2f  \n",limiter);
+    Brain.Screen.print("Controller Axis3 pct = %d  ", Controller1.Axis3.position(percent));
+    Brain.Screen.setCursor(2, 1);
+    Brain.Screen.print("Controller Axis1 pct = %d  ", Controller1.Axis1.position(percent));
+    Brain.Screen.setCursor(3, 1);
+    Brain.Screen.print("Var Axis1 = %d  ", Axis1);
+    Brain.Screen.setCursor(4, 1);
+    Brain.Screen.print("Var Axis3 = %d  ", Axis3);
+    Brain.Screen.setCursor(5, 1);
+    Brain.Screen.print("lm2posdeg = %.2f    ", LeftMotor2.position(deg));//
     wait(20, msec); // Sleep the task for a short amount of time to
                     // prevent wasted resources.
   }
