@@ -15,7 +15,7 @@
 // ClawMotor            motor         3               
 // ArmMotor             motor         8               
 // ---- END VEXCODE CONFIGURED DEVICES ----
-
+//test
 #include "vex.h"
 #include <cmath>
 #include <iostream>
@@ -264,7 +264,6 @@ void usercontrol(void) {
       ConveyorMotor.spin(directionType::fwd, 0, velocityUnits::pct);
       IntakeMotor.spin(directionType::fwd, 0, velocityUnits::pct);
     }
-
     Brain.Screen.setCursor(1, 1);
     Brain.Screen.print("Controller Axis3 pct = %d  ", Controller1.Axis3.position(percent));
     Brain.Screen.setCursor(2, 1);
@@ -297,3 +296,4 @@ int main() {
     wait(100, msec);
   }
 }
+//hello send help :) im am super sigma
