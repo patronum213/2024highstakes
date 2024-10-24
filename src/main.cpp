@@ -296,4 +296,3 @@ int main() {
     wait(100, msec);
   }
 }
-//hello send help :) im am super sigma
