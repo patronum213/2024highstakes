@@ -200,7 +200,9 @@ void usercontrol(void) {
   float FBsensitivity = 1.0;
   float LRsensitivity = 0.7; 
   bool goalintakeopen = false;
-  bool buttonPreviouslyPressed = false;
+  bool L2PreviouslyPressed = false;
+  bool R2PreviouslyPressed = false;
+  bool intakeActive = false;
   LeftMotor2.resetPosition();
   while (true) {
     //Driving Control
@@ -229,26 +231,37 @@ void usercontrol(void) {
     RightMotor2.spin(directionType::fwd, rightsidepower, velocityUnits::pct);
     RightMotor3.spin(directionType::fwd, rightsidepower, velocityUnits::pct);
 
-    //intake and conveyor (toggle by L2)
-    if(Controller1.ButtonL2.pressing() && goalintakeopen == true && buttonPreviouslyPressed == false) { //If L2 is pressed while the limiter is 1
+    //goal pneumatics (toggled by L2)
+    if(Controller1.ButtonL2.pressing() && goalintakeopen == true && L2PreviouslyPressed == false) { //If L2 is pressed while the limiter is 1
       DigitalOutA.set(false);
       goalintakeopen = false;
     }
-    else if(Controller1.ButtonL2.pressing() && goalintakeopen == false && buttonPreviouslyPressed == false) { //If L2 is pressed while the limiter is 1
+    else if(Controller1.ButtonL2.pressing() && goalintakeopen == false && L2PreviouslyPressed == false) { //If L2 is pressed while the limiter is 1
       DigitalOutA.set(true);
       goalintakeopen = true;
     }
 
-    if (Controller1.ButtonL2.pressing()) {buttonPreviouslyPressed = true;}
-    else {buttonPreviouslyPressed = false;}
+    if (Controller1.ButtonL2.pressing()) {L2PreviouslyPressed = true;}
+    else {L2PreviouslyPressed = false;
+    }
 
-
-    //Conveyor & intake controls
-    if(Controller1.ButtonR1.pressing() && Controller1.ButtonY.pressing()) {//low speed mode for testing while holding Y
+    //intake and conveyor (toggled by R2)
+    if(Controller1.ButtonR2.pressing() && intakeActive == true && R2PreviouslyPressed == false) { //If L2 is pressed while the limiter is 1
+      intakeActive = false;
+    }
+    else if(Controller1.ButtonR2.pressing() && intakeActive == false && R2PreviouslyPressed == false) { //If L2 is pressed while the limiter is 1
+      intakeActive = true;
+    }
+    if (Controller1.ButtonR2.pressing()) {R2PreviouslyPressed = true;}
+    else {R2PreviouslyPressed = false;
+    }
+    
+    
+    if(Controller1.ButtonR1.pressing() && Controller1.ButtonY.pressing()) {//out but slow
       ConveyorMotor.spin(directionType::fwd, 25, velocityUnits::pct); 
       IntakeMotor.spin(directionType::fwd, 25, velocityUnits::pct); 
     }
-    else if(Controller1.ButtonR2.pressing() && Controller1.ButtonY.pressing()) { 
+    else if(intakeActive && Controller1.ButtonY.pressing()) { //in but slow
       ConveyorMotor.spin(directionType::rev, 25, velocityUnits::pct); 
       IntakeMotor.spin(directionType::rev, 25, velocityUnits::pct); 
     }
@@ -256,7 +269,7 @@ void usercontrol(void) {
       ConveyorMotor.spin(directionType::fwd, 100, velocityUnits::pct); 
       IntakeMotor.spin(directionType::fwd, 100, velocityUnits::pct); 
     }
-    else if(Controller1.ButtonR2.pressing()) { //in
+    else if(intakeActive) { //in
       ConveyorMotor.spin(directionType::rev, 100, velocityUnits::pct); 
       IntakeMotor.spin(directionType::rev, 100, velocityUnits::pct); 
     }
