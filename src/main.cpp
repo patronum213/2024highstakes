@@ -39,9 +39,17 @@ digital_out DigitalOutA = vex::digital_out(ThreeWirePort.A);
 /*  function is only called once after the V5 has been powered on and        */
 /*  not every time that the robot is disabled.                               */
 /*---------------------------------------------------------------------------*/
-void MoveStraight(int speed, float distance, bool fowards) {
-  LeftMotor2.resetPosition();
+void resetMotors(void) {
+  LeftMotor1.resetPosition(); 
+  LeftMotor2.resetPosition(); 
+  LeftMotor3.resetPosition();
+  RightMotor1.resetPosition();
   RightMotor2.resetPosition();
+  RightMotor3.resetPosition();
+  ConveyorMotor.resetPosition();
+};
+void MoveStraight(int speed, float distance, bool fowards) {
+  resetMotors();
   //wheels are 4 inches in diamametere, times pi means curcumernce is 12.56636 in
   //divided by 360 to get the inces per degree (0.0349065556)
   //times 2.3333333332 for the gearing
@@ -173,8 +181,7 @@ void autonomous(void) {
   RightMotor2.setStopping(hold);
   RightMotor3.setStopping(hold);
   DigitalOutA.set(true);
-  LeftMotor2.resetPosition();
-  RightMotor2.resetPosition();
+  resetMotors();
   /*MoveStraight(40, 24, false); 
   wait(200, msec);
   DigitalOutA.set(false);
@@ -209,7 +216,6 @@ void usercontrol(void) {
   RightMotor2.setStopping(coast);
   RightMotor3.setStopping(coast);
   // User control code here, inside the loop
-  IntakeMotor.setMaxTorque(50, pct);
   int leftsidepower;
   int rightsidepower;
   float FBsensitivity = 1.0;
@@ -218,7 +224,7 @@ void usercontrol(void) {
   bool L2PreviouslyPressed = false;
   bool R2PreviouslyPressed = false;
   bool intakeActive = false;
-  LeftMotor2.resetPosition();
+  resetMotors();
   while (true) {
     //Driving Control
     //controller dead zone
