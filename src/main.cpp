@@ -42,7 +42,64 @@ digital_out DigitalOutA = vex::digital_out(ThreeWirePort.A);
 void MoveStraight(int speed, float distance, bool fowards) {
   LeftMotor2.resetPosition();
   RightMotor2.resetPosition();
-  float distancedeg = (distance/0.0349065556)*0.333333;//4*pi/360 and weird gearing constant
+  //wheels are 4 inches in diamametere, times pi means curcumernce is 12.56636 in
+  //divided by 360 to get the inces per degree (0.0349065556)
+  //times 2.3333333332 for the gearing
+  //gives us the final multiplier of 0.0139626222 
+  /*float distancedeg = (distance*0.0349065556)*2.3333333332;
+  Brain.Screen.setCursor(4, 1);
+  Brain.Screen.print("dist in deg = %.2f  ", (distance*0.0349065556)*2.3333333332);*/
+  //alright screw it it's revolution time
+  //distance (in inches) divided by wheel curcumfrence mutiplied by gear raito
+  //TODO: switch this to pid for greater accuracy.
+  float distancerev = (distance/12.56636)*2.3333333332;
+  if (fowards) {
+    LeftMotor1.spin(directionType::fwd, speed, velocityUnits::pct); 
+    LeftMotor2.spin(directionType::fwd, speed, velocityUnits::pct); 
+    LeftMotor3.spin(directionType::fwd, speed, velocityUnits::pct);
+    RightMotor1.spin(directionType::fwd, speed, velocityUnits::pct);
+    RightMotor2.spin(directionType::fwd, speed, velocityUnits::pct);
+    RightMotor3.spin(directionType::fwd, speed, velocityUnits::pct);
+    while (LeftMotor2.position(rev) < distancerev) {
+    if (LeftMotor2.position(rev) > distancerev) {
+      LeftMotor1.stop(); 
+      LeftMotor2.stop(); 
+      LeftMotor3.stop();
+      RightMotor1.stop();
+      RightMotor2.stop();
+      RightMotor3.stop();
+      }
+    };
+  }
+  else if (!fowards) {
+    while (LeftMotor2.position(rev) < -distancerev) {
+    LeftMotor1.spin(directionType::rev, speed, velocityUnits::pct); 
+    LeftMotor2.spin(directionType::rev, speed, velocityUnits::pct); 
+    LeftMotor3.spin(directionType::rev, speed, velocityUnits::pct);
+    RightMotor1.spin(directionType::rev, speed, velocityUnits::pct);
+    RightMotor2.spin(directionType::rev, speed, velocityUnits::pct);
+    RightMotor3.spin(directionType::rev, speed, velocityUnits::pct);
+    if (LeftMotor2.position(rev) < -distancerev) {
+      LeftMotor1.stop(); 
+      LeftMotor2.stop(); 
+      LeftMotor3.stop();
+      RightMotor1.stop();
+      RightMotor2.stop();
+      RightMotor3.stop();
+      }
+    };
+  }
+  
+}
+/*
+void MoveTurning(int speed, int degrees, bool isturningright) {
+  LeftMotor2.resetPosition();
+  RightMotor2.resetPosition();
+  //wheels are 4 inches in diamametere, times pi means curcumernce is 12.56636 in
+  //divided by 360 to get the inces per degree (0.0349065556)
+  //times 0.4 for the gearing gives us the distance of
+  //gives us the final multiplier of 0.0139626222
+  float distancedeg = (distance/0.0349065556)*0.4285714286;
   Brain.Screen.setCursor(4, 1);
   Brain.Screen.print("dist in deg = %.2f  ", (distance/0.0349065556)*0.4285714286);
   if (fowards) {
@@ -82,50 +139,6 @@ void MoveStraight(int speed, float distance, bool fowards) {
     };
   }
   
-}
-/*
-void MoveTurning(int speed, int degrees, bool isturningright) {
-  LeftMotor2.resetPosition();
-  RightMotor2.resetPosition();
-  float degreesinwheeldeg = distance*4523.76;//4*pi*360
-  
-  if (distancedeg > 0) {
-    while (!(LeftMotor2.position(deg) > distance)) {
-    LeftMotor1.spin(directionType::fwd, speed, velocityUnits::pct); 
-    LeftMotor2.spin(directionType::fwd, speed, velocityUnits::pct); 
-    LeftMotor3.spin(directionType::fwd, speed, velocityUnits::pct);
-    RightMotor1.spin(directionType::rev, speed, velocityUnits::pct);
-    RightMotor2.spin(directionType::rev, speed, velocityUnits::pct);
-    RightMotor3.spin(directionType::rev, speed, velocityUnits::pct);
-    if (LeftMotor2.position(deg) > distance) {
-      LeftMotor1.stop(); 
-      LeftMotor2.stop(); 
-      LeftMotor3.stop();
-      RightMotor1.stop();
-      RightMotor2.stop();
-      RightMotor3.stop();
-      }
-    };
-  }
-  else if (distancedeg > 0) {
-    while (!(LeftMotor2.position(deg) < distance)) {
-    LeftMotor1.spin(directionType::rev, speed, velocityUnits::pct); 
-    LeftMotor2.spin(directionType::rev, speed, velocityUnits::pct); 
-    LeftMotor3.spin(directionType::rev, speed, velocityUnits::pct);
-    RightMotor1.spin(directionType::rev, speed, velocityUnits::pct);
-    RightMotor2.spin(directionType::rev, speed, velocityUnits::pct);
-    RightMotor3.spin(directionType::rev, speed, velocityUnits::pct);
-    if (LeftMotor2.position(deg) < distance) {
-      LeftMotor1.stop(); 
-      LeftMotor2.stop(); 
-      LeftMotor3.stop();
-      RightMotor1.stop();
-      RightMotor2.stop();
-      RightMotor3.stop();
-      }
-    };
-  }
-  
 }*/
 double exponent(double base, double exponent) {
     double product = 1;
@@ -153,14 +166,16 @@ void pre_auton(void) {
 /*---------------------------------------------------------------------------*/
 
 void autonomous(void) {
-  LeftMotor1.setStopping(brake); 
-  LeftMotor2.setStopping(brake); 
-  LeftMotor3.setStopping(brake);
-  RightMotor1.setStopping(brake);
-  RightMotor2.setStopping(brake);
-  RightMotor3.setStopping(brake);
+  LeftMotor1.setStopping(hold); 
+  LeftMotor2.setStopping(hold); 
+  LeftMotor3.setStopping(hold);
+  RightMotor1.setStopping(hold);
+  RightMotor2.setStopping(hold);
+  RightMotor3.setStopping(hold);
   DigitalOutA.set(true);
-  MoveStraight(40, 24, false); 
+  LeftMotor2.resetPosition();
+  RightMotor2.resetPosition();
+  /*MoveStraight(40, 24, false); 
   wait(200, msec);
   DigitalOutA.set(false);
   wait(200, msec);
@@ -168,8 +183,8 @@ void autonomous(void) {
   IntakeMotor.spin(directionType::rev, 100, velocityUnits::pct); 
   wait(1000, msec);
   ConveyorMotor.stop();
-  IntakeMotor.stop();
-  MoveStraight(40, 20, false); 
+  IntakeMotor.stop();*/
+  
   // ..........................................................................
   // Insert autonomous user code here.
   // ..........................................................................
