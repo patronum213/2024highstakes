@@ -39,7 +39,7 @@ digital_out DigitalOutB = vex::digital_out(ThreeWirePort.B);
 /*  function is only called once after the V5 has been powered on and        */
 /*  not every time that the robot is disabled.                               */
 /*---------------------------------------------------------------------------*/
-void resetMotors(void) {
+void resetMotorEncoders(void) {
   LeftMotor1.resetPosition(); 
   LeftMotor2.resetPosition(); 
   LeftMotor3.resetPosition();
@@ -48,8 +48,14 @@ void resetMotors(void) {
   RightMotor3.resetPosition();
   ConveyorMotor.resetPosition();
 };
-void MoveStraight(int speed, float distance, bool fowards) {
-  resetMotors();
+float distributeNormally (float input) {
+  return std::pow(2.71828, -std::pow(((4*input)-2), 2));
+};
+float distributeParabolically (float input) {
+  return (-4*std::pow((input-0.5), 2) + 1);
+};
+void MoveStraight(float distance, int maxSpeed, bool fowards) {
+  resetMotorEncoders();
   //wheels are 4 inches in diamametere, times pi means curcumernce is 12.56636 in
   //divided by 360 to get the inces per degree (0.0349065556)
   //times 2.3333333332 for the gearing
@@ -62,13 +68,16 @@ void MoveStraight(int speed, float distance, bool fowards) {
   //TODO: switch this to pid for greater accuracy.
   float distancerev = (distance/12.56636)*2.3333333332;
   if (fowards) {
-    LeftMotor1.spin(directionType::fwd, speed, velocityUnits::pct); 
-    LeftMotor2.spin(directionType::fwd, speed, velocityUnits::pct); 
-    LeftMotor3.spin(directionType::fwd, speed, velocityUnits::pct);
-    RightMotor1.spin(directionType::fwd, speed, velocityUnits::pct);
-    RightMotor2.spin(directionType::fwd, speed, velocityUnits::pct);
-    RightMotor3.spin(directionType::fwd, speed, velocityUnits::pct);
     while (LeftMotor2.position(rev) < distancerev) {
+    float distanceTraveledPct = (LeftMotor2.position(rev)/distancerev)*100.0;
+    float distributedSpeed = distributeParabolically/*Normally, Parabolically*/(distanceTraveledPct/100.0)*100.0;
+    float ajustedSpeed = std::max((distributedSpeed * (maxSpeed/100.0)), 10.0);
+    LeftMotor1.spin(directionType::fwd, ajustedSpeed, velocityUnits::pct); 
+    LeftMotor2.spin(directionType::fwd, ajustedSpeed, velocityUnits::pct); 
+    LeftMotor3.spin(directionType::fwd, ajustedSpeed, velocityUnits::pct);
+    RightMotor1.spin(directionType::fwd, ajustedSpeed, velocityUnits::pct);
+    RightMotor2.spin(directionType::fwd, ajustedSpeed, velocityUnits::pct);
+    RightMotor3.spin(directionType::fwd, ajustedSpeed, velocityUnits::pct);
     if (LeftMotor2.position(rev) > distancerev) {
       LeftMotor1.stop(); 
       LeftMotor2.stop(); 
@@ -79,7 +88,7 @@ void MoveStraight(int speed, float distance, bool fowards) {
       }
     };
   }
-  else if (!fowards) {
+  /*else if (!fowards) {
     while (LeftMotor2.position(rev) < -distancerev) {
     LeftMotor1.spin(directionType::rev, speed, velocityUnits::pct); 
     LeftMotor2.spin(directionType::rev, speed, velocityUnits::pct); 
@@ -96,7 +105,7 @@ void MoveStraight(int speed, float distance, bool fowards) {
       RightMotor3.stop();
       }
     };
-  }
+  }*/
   
 }
 /*
@@ -181,22 +190,15 @@ void autonomous(void) {
   RightMotor2.setStopping(hold);
   RightMotor3.setStopping(hold);
   DigitalOutA.set(true);
-  resetMotors();
-  /*MoveStraight(40, 24, false); 
-  wait(200, msec);
-  DigitalOutA.set(false);
-  wait(200, msec);
-  ConveyorMotor.spin(directionType::rev, 100, velocityUnits::pct); 
-  IntakeMotor.spin(directionType::rev, 100, velocityUnits::pct); 
-  wait(1000, msec);
-  ConveyorMotor.stop();
-  IntakeMotor.stop();*/
+  resetMotorEncoders();
+  MoveStraight(72, 100, true); 
   
   // ..........................................................................
   // Insert autonomous user code here.
   // ..........................................................................
   
 }
+
 
 /*---------------------------------------------------------------------------*/
 /*                                                                           */
@@ -225,7 +227,7 @@ void usercontrol(void) {
   bool L1PreviouslyPressed = false;
   bool R2PreviouslyPressed = false;
   bool intakeActive = false;
-  resetMotors();
+  resetMotorEncoders();
   while (true) {
     //Driving Control
     //controller dead zone
