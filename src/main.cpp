@@ -26,9 +26,9 @@ using namespace vex;
 competition Competition;
 
 // define your global instances of motors and other devices here
-triport ThreeWirePort = vex::triport( vex::PORT22 );
+triport ThreeWirePort = vex::triport( vex::PORT22 );//goal hook
 digital_out DigitalOutA = vex::digital_out(ThreeWirePort.A);
-
+digital_out DigitalOutB = vex::digital_out(ThreeWirePort.B);
 
 /*---------------------------------------------------------------------------*/
 /*                          Pre-Autonomous Functions                         */
@@ -222,6 +222,7 @@ void usercontrol(void) {
   float LRsensitivity = 0.7; 
   bool goalintakeopen = false;
   bool L2PreviouslyPressed = false;
+  bool L1PreviouslyPressed = false;
   bool R2PreviouslyPressed = false;
   bool intakeActive = false;
   resetMotors();
@@ -264,6 +265,19 @@ void usercontrol(void) {
 
     if (Controller1.ButtonL2.pressing()) {L2PreviouslyPressed = true;}
     else {L2PreviouslyPressed = false;
+    }
+    //goal pneumatics (toggled by L1)
+    if(Controller1.ButtonL1.pressing() && goalintakeopen == true && L1PreviouslyPressed == false) { //If L2 is pressed while the limiter is 1
+      DigitalOutB.set(false);
+      goalintakeopen = false;
+    }
+    else if(Controller1.ButtonL1.pressing() && goalintakeopen == false && L1PreviouslyPressed == false) { //If L2 is pressed while the limiter is 1
+      DigitalOutB.set(true);
+      goalintakeopen = true;
+    }
+
+    if (Controller1.ButtonL1.pressing()) {L1PreviouslyPressed = true;}
+    else {L1PreviouslyPressed = false;
     }
 
     //intake and conveyor (toggled by R2)
