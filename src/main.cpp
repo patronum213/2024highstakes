@@ -70,7 +70,7 @@ void MoveStraight(float distance, int maxSpeed, bool fowards) {
   if (fowards) {
     while (LeftMotor2.position(rev) < distancerev) {
     float distanceTraveledPct = (LeftMotor2.position(rev)/distancerev)*100.0;
-    float distributedSpeed = distributeParabolically/*Normally, Parabolically*/(distanceTraveledPct/100.0)*100.0;
+    float distributedSpeed = distributeParabolically(distanceTraveledPct/100.0)*100.0;
     float ajustedSpeed = std::max((distributedSpeed * (maxSpeed/100.0)), 10.0);
     LeftMotor1.spin(directionType::fwd, ajustedSpeed, velocityUnits::pct); 
     LeftMotor2.spin(directionType::fwd, ajustedSpeed, velocityUnits::pct); 
@@ -88,14 +88,17 @@ void MoveStraight(float distance, int maxSpeed, bool fowards) {
       }
     };
   }
-  /*else if (!fowards) {
+  else if (!fowards) {
+    float distanceTraveledPct = (LeftMotor2.position(rev)/-distancerev)*100.0;
+    float distributedSpeed = distributeParabolically(distanceTraveledPct/100.0)*100.0;
+    float ajustedSpeed = std::max((distributedSpeed * (maxSpeed/100.0)), 10.0);
+    LeftMotor1.spin(directionType::rev, ajustedSpeed, velocityUnits::pct); 
+    LeftMotor2.spin(directionType::rev, ajustedSpeed, velocityUnits::pct); 
+    LeftMotor3.spin(directionType::rev, ajustedSpeed, velocityUnits::pct);
+    RightMotor1.spin(directionType::rev, ajustedSpeed, velocityUnits::pct);
+    RightMotor2.spin(directionType::rev, ajustedSpeed, velocityUnits::pct);
+    RightMotor3.spin(directionType::rev, ajustedSpeed, velocityUnits::pct);
     while (LeftMotor2.position(rev) < -distancerev) {
-    LeftMotor1.spin(directionType::rev, speed, velocityUnits::pct); 
-    LeftMotor2.spin(directionType::rev, speed, velocityUnits::pct); 
-    LeftMotor3.spin(directionType::rev, speed, velocityUnits::pct);
-    RightMotor1.spin(directionType::rev, speed, velocityUnits::pct);
-    RightMotor2.spin(directionType::rev, speed, velocityUnits::pct);
-    RightMotor3.spin(directionType::rev, speed, velocityUnits::pct);
     if (LeftMotor2.position(rev) < -distancerev) {
       LeftMotor1.stop(); 
       LeftMotor2.stop(); 
@@ -105,7 +108,7 @@ void MoveStraight(float distance, int maxSpeed, bool fowards) {
       RightMotor3.stop();
       }
     };
-  }*/
+  }
   
 }
 /*
