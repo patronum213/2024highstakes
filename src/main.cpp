@@ -89,6 +89,8 @@ void MoveStraight(float distance, int maxSpeed, bool fowards) {
     };
   }
   else if (!fowards) {
+    
+    while (LeftMotor2.position(rev) > -distancerev) {
     float distanceTraveledPct = (LeftMotor2.position(rev)/-distancerev)*100.0;
     float distributedSpeed = distributeParabolically(distanceTraveledPct/100.0)*100.0;
     float ajustedSpeed = std::max((distributedSpeed * (maxSpeed/100.0)), 10.0);
@@ -98,7 +100,6 @@ void MoveStraight(float distance, int maxSpeed, bool fowards) {
     RightMotor1.spin(directionType::rev, ajustedSpeed, velocityUnits::pct);
     RightMotor2.spin(directionType::rev, ajustedSpeed, velocityUnits::pct);
     RightMotor3.spin(directionType::rev, ajustedSpeed, velocityUnits::pct);
-    while (LeftMotor2.position(rev) < -distancerev) {
     if (LeftMotor2.position(rev) < -distancerev) {
       LeftMotor1.stop(); 
       LeftMotor2.stop(); 
@@ -111,44 +112,49 @@ void MoveStraight(float distance, int maxSpeed, bool fowards) {
   }
   
 }
-/*
-void MoveTurning(int speed, int degrees, bool isturningright) {
-  LeftMotor2.resetPosition();
-  RightMotor2.resetPosition();
+
+void MoveTurning(int degrees, int maxSpeed, bool isturningright) {
+  resetMotorEncoders();
   //wheels are 4 inches in diamametere, times pi means curcumernce is 12.56636 in
-  //divided by 360 to get the inces per degree (0.0349065556)
-  //times 0.4 for the gearing gives us the distance of
-  //gives us the final multiplier of 0.0139626222
-  float distancedeg = (distance/0.0349065556)*0.4285714286;
-  Brain.Screen.setCursor(4, 1);
-  Brain.Screen.print("dist in deg = %.2f  ", (distance/0.0349065556)*0.4285714286);
-  if (fowards) {
-    while (!(LeftMotor2.position(deg) > distancedeg)) {
-    LeftMotor1.spin(directionType::fwd, speed, velocityUnits::pct); 
-    LeftMotor2.spin(directionType::fwd, speed, velocityUnits::pct); 
-    LeftMotor3.spin(directionType::fwd, speed, velocityUnits::pct);
-    RightMotor1.spin(directionType::fwd, speed, velocityUnits::pct);
-    RightMotor2.spin(directionType::fwd, speed, velocityUnits::pct);
-    RightMotor3.spin(directionType::fwd, speed, velocityUnits::pct);
-    if (LeftMotor2.position(deg) > distancedeg) {
-      LeftMotor1.stop(); 
-      LeftMotor2.stop(); 
-      LeftMotor3.stop();
-      RightMotor1.stop();
-      RightMotor2.stop();
-      RightMotor3.stop();
-      }
+  //wheel to wheel width is 14.75, time pi means one 360 degree turn is 46.34845 in covered
+  //divided by 360 is 0.12875 inches covered per degree of turning
+  float distanceInch = degrees*0.12875;
+  //using the same inch to revolution from driveStraight
+  float distanceRev = (distanceInch/12.56636)*2.3333333332;
+  distanceRev *= 1.032;
+  if (isturningright) {
+    while (LeftMotor2.position(rev) < distanceRev) {//to turn right, left wheels must go fowards while right wheels must go backwards
+    float distanceTraveledPct = (LeftMotor2.position(rev)/distanceRev)*100.0;
+    float distributedSpeed = distributeParabolically(distanceTraveledPct/100.0)*100.0;
+    float ajustedSpeed = std::max((distributedSpeed * (maxSpeed/100.0)), 10.0);
+    LeftMotor1.spin(directionType::fwd, ajustedSpeed, velocityUnits::pct); 
+    LeftMotor2.spin(directionType::fwd, ajustedSpeed, velocityUnits::pct); 
+    LeftMotor3.spin(directionType::fwd, ajustedSpeed, velocityUnits::pct);
+    RightMotor1.spin(directionType::rev, ajustedSpeed, velocityUnits::pct);
+    RightMotor2.spin(directionType::rev, ajustedSpeed, velocityUnits::pct);
+    RightMotor3.spin(directionType::rev, ajustedSpeed, velocityUnits::pct);
+      if (LeftMotor2.position(rev) > distanceRev) {
+        LeftMotor1.stop(); 
+        LeftMotor2.stop(); 
+        LeftMotor3.stop();
+        RightMotor1.stop();
+        RightMotor2.stop();
+        RightMotor3.stop();
+        }
     };
   }
-  else if (!fowards) {
-    while (!(LeftMotor2.position(deg) < -distancedeg)) {
-    LeftMotor1.spin(directionType::rev, speed, velocityUnits::pct); 
-    LeftMotor2.spin(directionType::rev, speed, velocityUnits::pct); 
-    LeftMotor3.spin(directionType::rev, speed, velocityUnits::pct);
-    RightMotor1.spin(directionType::rev, speed, velocityUnits::pct);
-    RightMotor2.spin(directionType::rev, speed, velocityUnits::pct);
-    RightMotor3.spin(directionType::rev, speed, velocityUnits::pct);
-    if (LeftMotor2.position(deg) < -distancedeg) {
+  else if (!isturningright) {
+    while (RightMotor2.position(rev) < distanceRev) {
+    float distanceTraveledPct = (RightMotor2.position(rev)/distanceRev)*100.0;
+    float distributedSpeed = distributeParabolically(distanceTraveledPct/100.0)*100.0;
+    float ajustedSpeed = std::max((distributedSpeed * (maxSpeed/100.0)), 10.0);
+    LeftMotor1.spin(directionType::rev, ajustedSpeed, velocityUnits::pct); 
+    LeftMotor2.spin(directionType::rev, ajustedSpeed, velocityUnits::pct); 
+    LeftMotor3.spin(directionType::rev, ajustedSpeed, velocityUnits::pct);
+    RightMotor1.spin(directionType::fwd, ajustedSpeed, velocityUnits::pct);
+    RightMotor2.spin(directionType::fwd, ajustedSpeed, velocityUnits::pct);
+    RightMotor3.spin(directionType::fwd, ajustedSpeed, velocityUnits::pct);
+    if (RightMotor2.position(rev) > distanceRev) {
       LeftMotor1.stop(); 
       LeftMotor2.stop(); 
       LeftMotor3.stop();
@@ -159,15 +165,7 @@ void MoveTurning(int speed, int degrees, bool isturningright) {
     };
   }
   
-}*/
-double exponent(double base, double exponent) {
-    double product = 1;
-    for (size_t i = 0; i < exponent; i++)
-    {
-      product *= base; 
-    }
-    return product;     
-}
+};
 void pre_auton(void) {
   // Initializing Robot Configuration. DO NOT REMOVE!
   vexcodeInit();
@@ -194,8 +192,12 @@ void autonomous(void) {
   RightMotor3.setStopping(hold);
   DigitalOutA.set(true);
   resetMotorEncoders();
-  MoveStraight(72, 100, true); 
-  
+  //MoveStraight(48, 50, true); 
+  MoveTurning(90, 30, true); 
+  //MoveStraight(48, 50, false);
+  //MoveTurning(90, 30, false); 
+  //MoveStraight(48, 50, false);
+  //MoveTurning(3600, 100, true);
   // ..........................................................................
   // Insert autonomous user code here.
   // ..........................................................................
