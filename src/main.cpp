@@ -166,6 +166,111 @@ void MoveTurning(int degrees, int maxSpeed, bool isturningright) {
   }
   
 };
+void TurnWithRatio(int distance, int maxSpeed, float LeftToRightRatio, bool fowards) {
+  resetMotorEncoders();
+  //turn with ratio uses the ratio of left wheel power to right wheel power to determine direction
+  //if LtoRratio is greater than 1, it turns right, less than one and it turns left
+  //ratios should be given in fractions anyway to help keep track of turns 
+  //TODO: switch this to pid for greater accuracy.
+  float distancerev = (distance/12.56636)*2.3333333332;
+  float leftSideMultiplier = 1;
+  float rightSideMultiplier = 1;
+    if (LeftToRightRatio > 1) {
+      rightSideMultiplier = 1/LeftToRightRatio;
+      if (fowards) {
+        while (LeftMotor2.position(rev) < distancerev) {
+        float distanceTraveledPct = (LeftMotor2.position(rev)/distancerev)*100.0;
+        float distributedSpeed = distributeParabolically(distanceTraveledPct/100.0)*100.0;
+        float ajustedSpeed = std::max((distributedSpeed * (maxSpeed/100.0)), 10.0);
+        
+        LeftMotor1.spin(directionType::fwd, ajustedSpeed*leftSideMultiplier, velocityUnits::pct); 
+        LeftMotor2.spin(directionType::fwd, ajustedSpeed*leftSideMultiplier, velocityUnits::pct); 
+        LeftMotor3.spin(directionType::fwd, ajustedSpeed*leftSideMultiplier, velocityUnits::pct);
+        RightMotor1.spin(directionType::fwd, ajustedSpeed*rightSideMultiplier, velocityUnits::pct);
+        RightMotor2.spin(directionType::fwd, ajustedSpeed*rightSideMultiplier, velocityUnits::pct);
+        RightMotor3.spin(directionType::fwd, ajustedSpeed*rightSideMultiplier, velocityUnits::pct);
+        if (LeftMotor2.position(rev) > distancerev) {
+          LeftMotor1.stop(); 
+          LeftMotor2.stop(); 
+          LeftMotor3.stop();
+          RightMotor1.stop();
+          RightMotor2.stop();
+          RightMotor3.stop();
+          }
+        };
+      }
+      else if (!fowards) {
+        while (LeftMotor2.position(rev) > -distancerev) {
+        float distanceTraveledPct = (LeftMotor2.position(rev)/-distancerev)*100.0;
+        float distributedSpeed = distributeParabolically(distanceTraveledPct/100.0)*100.0;
+        float ajustedSpeed = std::max((distributedSpeed * (maxSpeed/100.0)), 10.0);
+        LeftMotor1.spin(directionType::rev, ajustedSpeed*leftSideMultiplier, velocityUnits::pct); 
+        LeftMotor2.spin(directionType::rev, ajustedSpeed*leftSideMultiplier, velocityUnits::pct); 
+        LeftMotor3.spin(directionType::rev, ajustedSpeed*leftSideMultiplier, velocityUnits::pct);
+        RightMotor1.spin(directionType::rev, ajustedSpeed*rightSideMultiplier, velocityUnits::pct);
+        RightMotor2.spin(directionType::rev, ajustedSpeed*rightSideMultiplier, velocityUnits::pct);
+        RightMotor3.spin(directionType::rev, ajustedSpeed*rightSideMultiplier, velocityUnits::pct);
+        if (LeftMotor2.position(rev) < -distancerev) {
+          LeftMotor1.stop(); 
+          LeftMotor2.stop(); 
+          LeftMotor3.stop();
+          RightMotor1.stop();
+          RightMotor2.stop();
+          RightMotor3.stop();
+          }
+        };
+      }
+    }
+    else if (LeftToRightRatio < 1) {
+      leftSideMultiplier = LeftToRightRatio;
+      if (fowards) {
+        while (RightMotor2.position(rev) < distancerev) {
+        float distanceTraveledPct = (RightMotor2.position(rev)/distancerev)*100.0;
+        float distributedSpeed = distributeParabolically(distanceTraveledPct/100.0)*100.0;
+        float ajustedSpeed = std::max((distributedSpeed * (maxSpeed/100.0)), 10.0);
+        
+        LeftMotor1.spin(directionType::fwd, ajustedSpeed*leftSideMultiplier, velocityUnits::pct); 
+        LeftMotor2.spin(directionType::fwd, ajustedSpeed*leftSideMultiplier, velocityUnits::pct); 
+        LeftMotor3.spin(directionType::fwd, ajustedSpeed*leftSideMultiplier, velocityUnits::pct);
+        RightMotor1.spin(directionType::fwd, ajustedSpeed*rightSideMultiplier, velocityUnits::pct);
+        RightMotor2.spin(directionType::fwd, ajustedSpeed*rightSideMultiplier, velocityUnits::pct);
+        RightMotor3.spin(directionType::fwd, ajustedSpeed*rightSideMultiplier, velocityUnits::pct);
+        if (RightMotor2.position(rev) > distancerev) {
+          LeftMotor1.stop(); 
+          LeftMotor2.stop(); 
+          LeftMotor3.stop();
+          RightMotor1.stop();
+          RightMotor2.stop();
+          RightMotor3.stop();
+          }
+        };
+      }
+      else if (!fowards) {
+        while (RightMotor2.position(rev) > -distancerev) {
+        float distanceTraveledPct = (RightMotor2.position(rev)/-distancerev)*100.0;
+        float distributedSpeed = distributeParabolically(distanceTraveledPct/100.0)*100.0;
+        float ajustedSpeed = std::max((distributedSpeed * (maxSpeed/100.0)), 10.0);
+        LeftMotor1.spin(directionType::rev, ajustedSpeed*leftSideMultiplier, velocityUnits::pct); 
+        LeftMotor2.spin(directionType::rev, ajustedSpeed*leftSideMultiplier, velocityUnits::pct); 
+        LeftMotor3.spin(directionType::rev, ajustedSpeed*leftSideMultiplier, velocityUnits::pct);
+        RightMotor1.spin(directionType::rev, ajustedSpeed*rightSideMultiplier, velocityUnits::pct);
+        RightMotor2.spin(directionType::rev, ajustedSpeed*rightSideMultiplier, velocityUnits::pct);
+        RightMotor3.spin(directionType::rev, ajustedSpeed*rightSideMultiplier, velocityUnits::pct);
+        if (RightMotor2.position(rev) < -distancerev) {
+          LeftMotor1.stop(); 
+          LeftMotor2.stop(); 
+          LeftMotor3.stop();
+          RightMotor1.stop();
+          RightMotor2.stop();
+          RightMotor3.stop();
+          }
+        };
+      }
+    };
+  
+  
+  
+};
 void pre_auton(void) {
   // Initializing Robot Configuration. DO NOT REMOVE!
   vexcodeInit();
@@ -190,17 +295,7 @@ void autonomous(void) {
   RightMotor1.setStopping(hold);
   RightMotor2.setStopping(hold);
   RightMotor3.setStopping(hold);
-  DigitalOutA.set(true);
   resetMotorEncoders();
-  //MoveStraight(48, 50, true); 
-  MoveTurning(90, 30, true); 
-  //MoveStraight(48, 50, false);
-  //MoveTurning(90, 30, false); 
-  //MoveStraight(48, 50, false);
-  //MoveTurning(3600, 100, true);
-  // ..........................................................................
-  // Insert autonomous user code here.
-  // ..........................................................................
   
 }
 
@@ -273,15 +368,22 @@ void usercontrol(void) {
     if (Controller1.ButtonL2.pressing()) {L2PreviouslyPressed = true;}
     else {L2PreviouslyPressed = false;
     }
+    
     //goal pneumatics (toggled by L1)
-    if(Controller1.ButtonL1.pressing() && goalintakeopen == true && L1PreviouslyPressed == false) { //If L2 is pressed while the limiter is 1
+    if(Controller1.ButtonL1.pressing()) { //If L2 is pressed while the limiter is 1
+      DigitalOutB.set(true);
+    }
+    else if(!Controller1.ButtonL1.pressing()) { //If L2 is pressed while the limiter is 1
       DigitalOutB.set(false);
-      goalintakeopen = false;
+    }
+    /*if(Controller1.ButtonL1.pressing() && goalintakeopen == true && L1PreviouslyPressed == false) { //If L2 is pressed while the limiter is 1
+      DigitalOutB.set(false);
+      //goalintakeopen = false;
     }
     else if(Controller1.ButtonL1.pressing() && goalintakeopen == false && L1PreviouslyPressed == false) { //If L2 is pressed while the limiter is 1
       DigitalOutB.set(true);
-      goalintakeopen = true;
-    }
+      //goalintakeopen = true;
+    }*/
 
     if (Controller1.ButtonL1.pressing()) {L1PreviouslyPressed = true;}
     else {L1PreviouslyPressed = false;
