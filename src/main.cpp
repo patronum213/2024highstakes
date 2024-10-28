@@ -296,7 +296,16 @@ void autonomous(void) {
   RightMotor2.setStopping(hold);
   RightMotor3.setStopping(hold);
   resetMotorEncoders();
-  
+  DigitalOutA.set(true);
+  MoveStraight(18, 70, false);//move out to get the goal
+  DigitalOutA.set(false);//grab it
+  ConveyorMotor.spin(directionType::rev, 100, velocityUnits::pct);//start spinning the conveyor
+  MoveTurning(60, 50, true);//turn towards the first stack
+  MoveStraight(22, 70, true);//go in to it
+  MoveStraight(18, 50, false);// reverse to not pick up the blue ring on top
+  MoveTurning(23, 50, true);//turn towards the center stack(s)
+  MoveStraight(23, 70, true);
+  MoveStraight(5, 70, false);
 }
 
 
