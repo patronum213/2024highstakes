@@ -27,8 +27,9 @@ competition Competition;
 
 // define your global instances of motors and other devices here
 triport ThreeWirePort = vex::triport( vex::PORT22 );//goal hook
-digital_out DigitalOutA = vex::digital_out(ThreeWirePort.A);
-digital_out DigitalOutB = vex::digital_out(ThreeWirePort.B);
+digital_out GoalPneumatics = vex::digital_out(ThreeWirePort.A);
+digital_out LobsterPneumatics = vex::digital_out(ThreeWirePort.B);
+digital_out IntakePneumatics = vex::digital_out(ThreeWirePort.C);
 
 /*---------------------------------------------------------------------------*/
 /*                          Pre-Autonomous Functions                         */
@@ -296,16 +297,75 @@ void autonomous(void) {
   RightMotor2.setStopping(hold);
   RightMotor3.setStopping(hold);
   resetMotorEncoders();
-  DigitalOutA.set(true);
+  ////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////RED NEGATIVE SIDE 4-RING AUTO//////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////
+  //6 points, preload + negative side stack + 2 center stacks; touches ladder
+  //13.5 seconds
+  //slot 1
+  /*GoalPneumatics.set(true);
   MoveStraight(18, 70, false);//move out to get the goal
-  DigitalOutA.set(false);//grab it
+  GoalPneumatics.set(false);//grab it
   ConveyorMotor.spin(directionType::rev, 100, velocityUnits::pct);//start spinning the conveyor
   MoveTurning(60, 50, true);//turn towards the first stack
   MoveStraight(22, 70, true);//go in to it
   MoveStraight(18, 50, false);// reverse to not pick up the blue ring on top
   MoveTurning(23, 50, true);//turn towards the center stack(s)
-  MoveStraight(23, 70, true);
-  MoveStraight(5, 70, false);
+  MoveStraight(23, 70, true);//drive in to center facing one
+  TurnWithRatio(38, 100, 1.0/3.0, false);//back out and align with the other
+  MoveTurning(62, 50, false);//turn towards it
+  MoveStraight(24, 70, true);//run in to it
+  MoveStraight(5, 70, false);//reverse
+  MoveTurning(75, 50, true);//turn towards the ladder
+  MoveStraight(40, 70, true);//bump in to it
+  */
+  ////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////BLUE NEGATIVE SIDE 4-RING AUTO//////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////
+  //6 points, preload + negative side stack + 2 center stacks; touches ladder
+  //13.5 seconds
+  //slot 2
+  /*GoalPneumatics.set(true);
+  MoveStraight(18, 70, false);//move out to get the goal
+  GoalPneumatics.set(false);//grab it
+  ConveyorMotor.spin(directionType::rev, 100, velocityUnits::pct);//start spinning the conveyor
+  MoveTurning(60, 50, false);//turn towards the first stack
+  MoveStraight(22, 70, true);//go in to it
+  MoveStraight(18, 50, false);// reverse to not pick up the blue ring on top
+  MoveTurning(23, 50, false);//turn towards the center stack(s)
+  MoveStraight(23, 70, true);//drive in to center facing one
+  TurnWithRatio(38, 100, 3.0/1.0, false);//back out and align with the other
+  MoveTurning(62, 50, true);//turn towards it
+  MoveStraight(24, 70, true);//run in to it
+  MoveStraight(5, 70, false);//reverse
+  MoveTurning(75, 50, false);//turn towards the ladder
+  MoveStraight(40, 70, true);//bump in to it
+  */
+  ////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////RED POSITIVE SIDE 3-RING AUTO//////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////
+  //5 points, preload + middle inverted stack + positive side stack
+  //?? seconds
+  //slot 4
+  GoalPneumatics.set(true);
+  MoveStraight(18, 70, false);//move to goal
+  GoalPneumatics.set(false);
+  ConveyorMotor.spin(directionType::rev, 100, velocityUnits::pct);
+  LobsterPneumatics.set(true);
+  MoveTurning(9, 50, true);
+  MoveStraight(18, 30, true);
+  LobsterPneumatics.set(false);
+  MoveStraight(10, 30, false);
+  MoveTurning(155, 50, false);
+  MoveStraight(35, 70, true);
+  MoveTurning(125, 70, false);
+  MoveStraight(21, 70, true);
+  /*GoalPneumatics.set(true);//second goal grabbing part
+  MoveTurning(90, 70, true);
+  MoveStraight(15, 70, true);
+  GoalPneumatics.set(false);
+  MoveStraight(10, 100, false);
+  MoveTurning(180, 70, true);*/
 }
 
 
@@ -366,11 +426,11 @@ void usercontrol(void) {
 
     //goal pneumatics (toggled by L2)
     if(Controller1.ButtonL2.pressing() && goalintakeopen == true && L2PreviouslyPressed == false) { //If L2 is pressed while the limiter is 1
-      DigitalOutA.set(false);
+      GoalPneumatics.set(false);
       goalintakeopen = false;
     }
     else if(Controller1.ButtonL2.pressing() && goalintakeopen == false && L2PreviouslyPressed == false) { //If L2 is pressed while the limiter is 1
-      DigitalOutA.set(true);
+      GoalPneumatics.set(true);
       goalintakeopen = true;
     }
 
@@ -380,17 +440,17 @@ void usercontrol(void) {
     
     //goal pneumatics (toggled by L1)
     if(Controller1.ButtonL1.pressing()) { //If L2 is pressed while the limiter is 1
-      DigitalOutB.set(true);
+      LobsterPneumatics.set(true);
     }
     else if(!Controller1.ButtonL1.pressing()) { //If L2 is pressed while the limiter is 1
-      DigitalOutB.set(false);
+      LobsterPneumatics.set(false);
     }
     /*if(Controller1.ButtonL1.pressing() && goalintakeopen == true && L1PreviouslyPressed == false) { //If L2 is pressed while the limiter is 1
-      DigitalOutB.set(false);
+      LobsterPneumatics.set(false);
       //goalintakeopen = false;
     }
     else if(Controller1.ButtonL1.pressing() && goalintakeopen == false && L1PreviouslyPressed == false) { //If L2 is pressed while the limiter is 1
-      DigitalOutB.set(true);
+      LobsterPneumatics.set(true);
       //goalintakeopen = true;
     }*/
 
