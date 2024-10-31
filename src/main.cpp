@@ -27,7 +27,7 @@ competition Competition;
 
 // define your global instances of motors and other devices here
 triport ThreeWirePort = vex::triport( vex::PORT22 );//goal hook
-digital_out GoalPneumatics = vex::digital_out(ThreeWirePort.A);
+digital_out GoalPneumatics = vex::digital_out(ThreeWirePort.H);
 digital_out LobsterPneumatics = vex::digital_out(ThreeWirePort.B);
 digital_out IntakePneumatics = vex::digital_out(ThreeWirePort.C);
 
@@ -347,25 +347,40 @@ void autonomous(void) {
   //5 points, preload + middle inverted stack + positive side stack
   //?? seconds
   //slot 4
-  GoalPneumatics.set(true);
+  /*GoalPneumatics.set(true);//open
   MoveStraight(18, 70, false);//move to goal
-  GoalPneumatics.set(false);
+  GoalPneumatics.set(false);//grab it
   ConveyorMotor.spin(directionType::rev, 100, velocityUnits::pct);
-  LobsterPneumatics.set(true);
-  MoveTurning(9, 50, true);
-  MoveStraight(18, 30, true);
-  LobsterPneumatics.set(false);
-  MoveStraight(10, 30, false);
-  MoveTurning(155, 50, false);
-  MoveStraight(35, 70, true);
-  MoveTurning(125, 70, false);
-  MoveStraight(21, 70, true);
-  /*GoalPneumatics.set(true);//second goal grabbing part
-  MoveTurning(90, 70, true);
-  MoveStraight(15, 70, true);
-  GoalPneumatics.set(false);
-  MoveStraight(10, 100, false);
-  MoveTurning(180, 70, true);*/
+  LobsterPneumatics.set(true);//pull the rollers up REMEMBER TO CHANGE WHEN THE ACTUATOR IS INSTALLED ///
+  MoveTurning(9, 50, true);//turn towards the center stack
+  MoveStraight(18, 30, true);//go up to/through it
+  LobsterPneumatics.set(false);//let the rollers fall
+  MoveStraight(10, 30, false);//pull it back
+  MoveTurning(155, 50, false);//turn towards the second stack
+  MoveStraight(35, 70, true);//go to it and intake the ring
+  MoveTurning(130, 70, false);//turn towards the tower
+  MoveStraight(21, 70, true);//go and touch it
+  */
+  ////////////////////////////////////////////////////////////////////////////////
+  ////////////////////////BLUE POSITIVE SIDE 3-RING AUTO//////////////////////////
+  ////////////////////////////////////////////////////////////////////////////////
+  //5 points, preload + middle inverted stack + positive side stack
+  //?? seconds
+  //slot 4
+  GoalPneumatics.set(true);//open
+  MoveStraight(18, 70, false);//move to goal
+  GoalPneumatics.set(false);//grab it
+  ConveyorMotor.spin(directionType::rev, 100, velocityUnits::pct);
+  LobsterPneumatics.set(true);//pull the rollers up REMEMBER TO CHANGE WHEN THE ACTUATOR IS INSTALLED ///
+  MoveTurning(9, 50, false);//turn towards the center stack
+  MoveStraight(18, 30, true);//go up to/through it
+  LobsterPneumatics.set(false);//let the rollers fall
+  MoveStraight(10, 30, false);//pull it back
+  MoveTurning(155, 50, true);//turn towards the second stack
+  MoveStraight(35, 70, true);//go to it and intake the ring
+  MoveTurning(130, 70, true);//turn towards the tower
+  MoveStraight(21, 70, true);//go and touch it
+  
 }
 
 
