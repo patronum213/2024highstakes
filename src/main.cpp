@@ -297,14 +297,14 @@ void autonomous(void) {
   RightMotor2.setStopping(hold);
   RightMotor3.setStopping(hold);
   resetMotorEncoders();
+  GoalPneumatics.set(true);
   ////////////////////////////////////////////////////////////////////////////////
   /////////////////////////RED NEGATIVE SIDE 4-RING AUTO//////////////////////////
   ////////////////////////////////////////////////////////////////////////////////
   //6 points, preload + negative side stack + 2 center stacks; touches ladder
   //13.5 seconds
   //slot 1
-  /*GoalPneumatics.set(true);
-  MoveStraight(18, 70, false);//move out to get the goal
+  /*MoveStraight(18, 70, false);//move out to get the goal
   GoalPneumatics.set(false);//grab it
   ConveyorMotor.spin(directionType::rev, 100, velocityUnits::pct);//start spinning the conveyor
   MoveTurning(60, 50, true);//turn towards the first stack
@@ -325,8 +325,7 @@ void autonomous(void) {
   //6 points, preload + negative side stack + 2 center stacks; touches ladder
   //13.5 seconds
   //slot 2
-  /*GoalPneumatics.set(true);
-  MoveStraight(18, 70, false);//move out to get the goal
+  /*MoveStraight(18, 70, false);//move out to get the goal
   GoalPneumatics.set(false);//grab it
   ConveyorMotor.spin(directionType::rev, 100, velocityUnits::pct);//start spinning the conveyor
   MoveTurning(60, 50, false);//turn towards the first stack
@@ -345,10 +344,9 @@ void autonomous(void) {
   /////////////////////////RED POSITIVE SIDE 3-RING AUTO//////////////////////////
   ////////////////////////////////////////////////////////////////////////////////
   //5 points, preload + middle inverted stack + positive side stack
-  //?? seconds
+  //11 seconds
   //slot 4
-  /*GoalPneumatics.set(true);//open
-  MoveStraight(18, 70, false);//move to goal
+  /*MoveStraight(18, 70, false);//move to goal
   GoalPneumatics.set(false);//grab it
   ConveyorMotor.spin(directionType::rev, 100, velocityUnits::pct);
   LobsterPneumatics.set(true);//pull the rollers up REMEMBER TO CHANGE WHEN THE ACTUATOR IS INSTALLED ///
@@ -358,17 +356,16 @@ void autonomous(void) {
   MoveStraight(10, 30, false);//pull it back
   MoveTurning(155, 50, false);//turn towards the second stack
   MoveStraight(35, 70, true);//go to it and intake the ring
-  MoveTurning(130, 70, false);//turn towards the tower
+  MoveTurning(127, 70, false);//turn towards the tower
   MoveStraight(21, 70, true);//go and touch it
   */
   ////////////////////////////////////////////////////////////////////////////////
   ////////////////////////BLUE POSITIVE SIDE 3-RING AUTO//////////////////////////
   ////////////////////////////////////////////////////////////////////////////////
   //5 points, preload + middle inverted stack + positive side stack
-  //?? seconds
+  //11 seconds
   //slot 4
-  GoalPneumatics.set(true);//open
-  MoveStraight(18, 70, false);//move to goal
+  /*MoveStraight(18, 70, false);//move to goal
   GoalPneumatics.set(false);//grab it
   ConveyorMotor.spin(directionType::rev, 100, velocityUnits::pct);
   LobsterPneumatics.set(true);//pull the rollers up REMEMBER TO CHANGE WHEN THE ACTUATOR IS INSTALLED ///
@@ -378,9 +375,20 @@ void autonomous(void) {
   MoveStraight(10, 30, false);//pull it back
   MoveTurning(155, 50, true);//turn towards the second stack
   MoveStraight(35, 70, true);//go to it and intake the ring
-  MoveTurning(130, 70, true);//turn towards the tower
+  MoveTurning(127, 70, true);//turn towards the tower
   MoveStraight(21, 70, true);//go and touch it
-  
+  */
+////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////SKILLS///////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+ConveyorMotor.spin(directionType::rev, 100, velocityUnits::pct);
+wait(2, sec);
+MoveStraight(12, 60, true);
+MoveTurning(90, 50, false);
+MoveStraight(13, 60, false);
+GoalPneumatics.set(false);
+MoveTurning(180, 50, false);
+MoveStraight(50, 60, true);
 }
 
 
