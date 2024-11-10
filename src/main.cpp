@@ -304,7 +304,7 @@ void autonomous(void) {
   //6 points, preload + negative side stack + 2 center stacks; touches ladder
   //13.5 seconds
   //slot 1
-  /*MoveStraight(18, 70, false);//move out to get the goal
+  MoveStraight(18, 70, false);//move out to get the goal
   GoalPneumatics.set(false);//grab it
   ConveyorMotor.spin(directionType::rev, 100, velocityUnits::pct);//start spinning the conveyor
   MoveTurning(60, 50, true);//turn towards the first stack
@@ -318,7 +318,7 @@ void autonomous(void) {
   MoveStraight(5, 70, false);//reverse
   MoveTurning(75, 50, true);//turn towards the ladder
   MoveStraight(40, 70, true);//bump in to it
-  */
+  
   ////////////////////////////////////////////////////////////////////////////////
   ////////////////////////BLUE NEGATIVE SIDE 4-RING AUTO//////////////////////////
   ////////////////////////////////////////////////////////////////////////////////
@@ -381,7 +381,7 @@ void autonomous(void) {
 ////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////SKILLS///////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
-ConveyorMotor.spin(directionType::rev, 100, velocityUnits::pct);
+/*ConveyorMotor.spin(directionType::rev, 100, velocityUnits::pct);
 wait(2, sec);
 MoveStraight(12, 60, true);
 MoveTurning(90, 50, false);
@@ -389,6 +389,7 @@ MoveStraight(13, 60, false);
 GoalPneumatics.set(false);
 MoveTurning(180, 50, false);
 MoveStraight(50, 60, true);
+*/
 }
 
 
@@ -468,19 +469,11 @@ void usercontrol(void) {
     else if(!Controller1.ButtonL1.pressing()) { //If L2 is pressed while the limiter is 1
       LobsterPneumatics.set(false);
     }
-    /*if(Controller1.ButtonL1.pressing() && goalintakeopen == true && L1PreviouslyPressed == false) { //If L2 is pressed while the limiter is 1
-      LobsterPneumatics.set(false);
-      //goalintakeopen = false;
-    }
-    else if(Controller1.ButtonL1.pressing() && goalintakeopen == false && L1PreviouslyPressed == false) { //If L2 is pressed while the limiter is 1
-      LobsterPneumatics.set(true);
-      //goalintakeopen = true;
-    }*/
+    
 
     if (Controller1.ButtonL1.pressing()) {L1PreviouslyPressed = true;}
     else {L1PreviouslyPressed = false;
     }
-
     //intake and conveyor (toggled by R2)
     if(Controller1.ButtonR2.pressing() && intakeActive == true && R2PreviouslyPressed == false) { //If L2 is pressed while the limiter is 1
       intakeActive = false;
@@ -512,6 +505,17 @@ void usercontrol(void) {
     else {
       ConveyorMotor.spin(directionType::fwd, 0, velocityUnits::pct);
       IntakeMotor.spin(directionType::fwd, 0, velocityUnits::pct);
+    }
+
+
+    if (Controller1.ButtonA.pressing()) {
+      ArmMotor.spin(directionType::fwd, 100, velocityUnits::pct); 
+    }
+    else if (Controller1.ButtonB.pressing()) {
+      ArmMotor.spin(directionType::rev, 100, velocityUnits::pct); 
+    }
+    else {
+      ArmMotor.stop();
     }
     Brain.Screen.setCursor(1, 1);
     Brain.Screen.print("Controller Axis3 pct = %d  ", Controller1.Axis3.position(percent));
