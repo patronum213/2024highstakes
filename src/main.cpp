@@ -417,7 +417,6 @@ void usercontrol(void) {
   float LRsensitivity = 0.7; 
   bool goalintakeopen = false;
   bool L2PreviouslyPressed = false;
-  bool L1PreviouslyPressed = false;
   bool R2PreviouslyPressed = false;
   bool intakeActive = false;
   resetMotorEncoders();
@@ -463,46 +462,45 @@ void usercontrol(void) {
     }
     
     //goal pneumatics (toggled by L1)
-    if(Controller1.ButtonL1.pressing()) { //If L2 is pressed while the limiter is 1
+    if(Controller1.ButtonL1.pressing()) {
       LobsterPneumatics.set(true);
     }
-    else if(!Controller1.ButtonL1.pressing()) { //If L2 is pressed while the limiter is 1
+    else if(!Controller1.ButtonL1.pressing()) {
       LobsterPneumatics.set(false);
     }
+  
     
+    //////////Intake and Conveyor system (R2 for foward, R1 for reverse)
+    //If R2 is pressed for "first" time while intake is already active
+    if(Controller1.ButtonR2.pressing() && intakeActive == true && R2PreviouslyPressed == false) { 
+      intakeActive = false; //set it to be inactive
+    }
+    //If R2 is pressed for "first" time while intake is not active
+    else if(Controller1.ButtonR2.pressing() && intakeActive == false && R2PreviouslyPressed == false) { 
+      intakeActive = true; //set it to be active
+    }
 
-    if (Controller1.ButtonL1.pressing()) {L1PreviouslyPressed = true;}
-    else {L1PreviouslyPressed = false;
-    }
-    //intake and conveyor (toggled by R2)
-    if(Controller1.ButtonR2.pressing() && intakeActive == true && R2PreviouslyPressed == false) { //If L2 is pressed while the limiter is 1
-      intakeActive = false;
-    }
-    else if(Controller1.ButtonR2.pressing() && intakeActive == false && R2PreviouslyPressed == false) { //If L2 is pressed while the limiter is 1
-      intakeActive = true;
-    }
-    if (Controller1.ButtonR2.pressing()) {R2PreviouslyPressed = true;}
-    else {R2PreviouslyPressed = false;
-    }
+    if (Controller1.ButtonR2.pressing()) {R2PreviouslyPressed = true;}//keep track of whether R2 was pressed in the previous cycle
+    else {R2PreviouslyPressed = false;}
     
-    
+    //first check if either of the slow buttons are being pressed
     if(Controller1.ButtonR1.pressing() && Controller1.ButtonY.pressing()) {//out but slow
       ConveyorMotor.spin(directionType::fwd, 25, velocityUnits::pct); 
     }
     else if(intakeActive && Controller1.ButtonY.pressing()) { //in but slow
       ConveyorMotor.spin(directionType::rev, 25, velocityUnits::pct); 
     }
-    else if(Controller1.ButtonR1.pressing()) {//out
+    else if(Controller1.ButtonR1.pressing()) {//check the out button first so outtaking overrides intaking
       ConveyorMotor.spin(directionType::fwd, 100, velocityUnits::pct); 
     }
-    else if(intakeActive) { //in
+    else if(intakeActive) {//otherwise if the intake should be active, spin the motor
       ConveyorMotor.spin(directionType::rev, 100, velocityUnits::pct); 
     }
-    else {
+    else {//otherwise do nothing
       ConveyorMotor.spin(directionType::fwd, 0, velocityUnits::pct);
     }
 
-
+    //rudimentary arm motor controlls
     if (Controller1.ButtonA.pressing()) {
       ArmMotor.spin(directionType::fwd, 100, velocityUnits::pct); 
     }
