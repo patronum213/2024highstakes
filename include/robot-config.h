@@ -11,7 +11,6 @@ extern motor LeftMotor3;
 extern motor RightMotor1;
 extern motor RightMotor2;
 extern motor RightMotor3;
-extern motor IntakeMotor;
 extern motor ConveyorMotor;
 extern motor ArmMotor;
 extern digital_out DigitalOutA;

@@ -488,23 +488,18 @@ void usercontrol(void) {
     
     if(Controller1.ButtonR1.pressing() && Controller1.ButtonY.pressing()) {//out but slow
       ConveyorMotor.spin(directionType::fwd, 25, velocityUnits::pct); 
-      IntakeMotor.spin(directionType::fwd, 25, velocityUnits::pct); 
     }
     else if(intakeActive && Controller1.ButtonY.pressing()) { //in but slow
       ConveyorMotor.spin(directionType::rev, 25, velocityUnits::pct); 
-      IntakeMotor.spin(directionType::rev, 25, velocityUnits::pct); 
     }
     else if(Controller1.ButtonR1.pressing()) {//out
       ConveyorMotor.spin(directionType::fwd, 100, velocityUnits::pct); 
-      IntakeMotor.spin(directionType::fwd, 100, velocityUnits::pct); 
     }
     else if(intakeActive) { //in
       ConveyorMotor.spin(directionType::rev, 100, velocityUnits::pct); 
-      IntakeMotor.spin(directionType::rev, 100, velocityUnits::pct); 
     }
     else {
       ConveyorMotor.spin(directionType::fwd, 0, velocityUnits::pct);
-      IntakeMotor.spin(directionType::fwd, 0, velocityUnits::pct);
     }
 
 
