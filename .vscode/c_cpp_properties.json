@@ -18,9 +18,9 @@
 			"name": "Win32",
 			"includePath": [
 				"${vex_sdkIncludes}",
-				"C:/Users/colli/AppData/Roaming/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20240802_15_00_00/vexv5/gcc/include/c++/4.9.3/bits"
+				"C:/Users/colli/AppData/Roaming/Code/User/globalStorage/vexrobotics.vexcode/sdk/cpp/V5/V5_20240802_15_00_00/vexv5/**"
 			],
-			"compilerPath": "${vex_compilerPath}",
+			"compilerPath": "C:/Users/colli/AppData/Roaming/Code/User/globalStorage/vexrobotics.vexcode/tools/cpp/toolchain_win32/clang/bin/clang.exe",
 			"cStandard": "gnu99",
 			"cppStandard": "gnu++11",
 			"intelliSenseMode": "windows-clang-x86"

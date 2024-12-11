@@ -4,6 +4,29 @@
 	],
 	"files.associations": {
 		"cmath": "cpp",
-		"algorithm": "cpp"
+		"algorithm": "cpp",
+		"*.tcc": "cpp",
+		"cctype": "cpp",
+		"chrono": "cpp",
+		"clocale": "cpp",
+		"cstdarg": "cpp",
+		"cstdint": "cpp",
+		"cstdio": "cpp",
+		"cstdlib": "cpp",
+		"ctime": "cpp",
+		"cwchar": "cpp",
+		"cwctype": "cpp",
+		"exception": "cpp",
+		"initializer_list": "cpp",
+		"iosfwd": "cpp",
+		"iostream": "cpp",
+		"istream": "cpp",
+		"limits": "cpp",
+		"new": "cpp",
+		"ostream": "cpp",
+		"ratio": "cpp",
+		"streambuf": "cpp",
+		"type_traits": "cpp",
+		"typeinfo": "cpp"
 	}
 }
