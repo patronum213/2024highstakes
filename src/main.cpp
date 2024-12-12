@@ -30,7 +30,8 @@ triport ThreeWirePort = vex::triport( vex::PORT22 );//goal hook
 digital_out GoalPneumatics = vex::digital_out(ThreeWirePort.H);
 digital_out LobsterPneumatics = vex::digital_out(ThreeWirePort.B);
 digital_out IntakePneumatics = vex::digital_out(ThreeWirePort.C);
-
+triport ThreeWirePortExtender = vex::triport( vex::PORT21 );
+digital_out ArmPneumatics = vex::digital_out(ThreeWirePortExtender.C);
 /*---------------------------------------------------------------------------*/
 /*                          Pre-Autonomous Functions                         */
 /*                                                                           */
@@ -48,6 +49,7 @@ void resetMotorEncoders(void) {
   RightMotor2.resetPosition();
   RightMotor3.resetPosition();
   ConveyorMotor.resetPosition();
+  ArmMotor.resetPosition();
 };
 float distributeNormally (float input) {
   return std::pow(2.71828, -std::pow(((4*input)-2), 2));
@@ -111,7 +113,6 @@ void MoveStraight(float distance, int maxSpeed, bool fowards) {
       }
     };
   }
-  
 }
 
 void MoveTurning(int degrees, int maxSpeed, bool isturningright) {
@@ -410,15 +411,27 @@ void usercontrol(void) {
   RightMotor1.setStopping(coast);
   RightMotor2.setStopping(coast);
   RightMotor3.setStopping(coast);
+  ArmMotor.setStopping(hold);
   // User control code here, inside the loop
   int leftsidepower;
   int rightsidepower;
   float FBsensitivity = 1.0;
   float LRsensitivity = 0.7; 
+  int loopsSinceStart = 0;
+  int armDelayTimer = -1;
   bool goalintakeopen = false;
+  bool armGrabbing = false;
   bool L2PreviouslyPressed = false;
+  bool APreviouslyPressed = false;
+  bool XPreviouslyPressed = false;
   bool R2PreviouslyPressed = false;
   bool intakeActive = false;
+  enum ArmPosition {
+    Resting,
+    Ready,
+    Up
+  };
+  ArmPosition targetPosition = Resting;
   resetMotorEncoders();
   while (true) {
     //Driving Control
@@ -457,9 +470,7 @@ void usercontrol(void) {
       goalintakeopen = true;
     }
 
-    if (Controller1.ButtonL2.pressing()) {L2PreviouslyPressed = true;}
-    else {L2PreviouslyPressed = false;
-    }
+    
     
     //goal pneumatics (toggled by L1)
     if(Controller1.ButtonL1.pressing()) {
@@ -472,16 +483,14 @@ void usercontrol(void) {
     
     //////////Intake and Conveyor system (R2 for foward, R1 for reverse)
     //If R2 is pressed for "first" time while intake is already active
-    if(Controller1.ButtonR2.pressing() && intakeActive == true && R2PreviouslyPressed == false) { 
+    if(Controller1.ButtonA.pressing() && intakeActive == true && APreviouslyPressed == false) { 
       intakeActive = false; //set it to be inactive
     }
     //If R2 is pressed for "first" time while intake is not active
-    else if(Controller1.ButtonR2.pressing() && intakeActive == false && R2PreviouslyPressed == false) { 
+    else if(Controller1.ButtonA.pressing() && intakeActive == false && APreviouslyPressed == false) { 
       intakeActive = true; //set it to be active
     }
 
-    if (Controller1.ButtonR2.pressing()) {R2PreviouslyPressed = true;}//keep track of whether R2 was pressed in the previous cycle
-    else {R2PreviouslyPressed = false;}
     
     //first check if either of the slow buttons are being pressed
     if(Controller1.ButtonR1.pressing() && Controller1.ButtonY.pressing()) {//out but slow
@@ -499,29 +508,79 @@ void usercontrol(void) {
     else {//otherwise do nothing
       ConveyorMotor.spin(directionType::fwd, 0, velocityUnits::pct);
     }
+    
+    if (armDelayTimer >= 0) {armDelayTimer += 1;};
+    if (Controller1.ButtonR2.pressing() && !R2PreviouslyPressed) {
+      if (targetPosition == Resting) {targetPosition = Ready;}
+      else if (targetPosition == Ready) {
+        armDelayTimer = 0;
+        ArmPneumatics.set(true);
+        armGrabbing = true;
+        ConveyorMotor.spinToPosition(ConveyorMotor.position(deg)+500, deg, 60.0, velocityUnits::pct, false);
+        intakeActive = false;
+      }
+      else if (targetPosition == Up) {
+        targetPosition = Resting;
+        ArmPneumatics.set(false);
+        armGrabbing = false;
+      }
+    };
+    if (armDelayTimer == 1) {
+      targetPosition = Up;
+      armDelayTimer = -1;  
+    } 
 
-    //rudimentary arm motor controlls
-    if (Controller1.ButtonA.pressing()) {
-      ArmMotor.spin(directionType::fwd, 100, velocityUnits::pct); 
-    }
-    else if (Controller1.ButtonB.pressing()) {
-      ArmMotor.spin(directionType::rev, 100, velocityUnits::pct); 
-    }
+
+
+    if (targetPosition == Resting) {ArmMotor.spinToPosition(0.0, deg, 60.0, velocityUnits::pct, false);}
+    else if (targetPosition == Ready) {ArmMotor.spinToPosition(92, deg, 80.0, velocityUnits::pct, false);}//65
+    else if (targetPosition == Up) {ArmMotor.spinToPosition(330, deg, 90.0, velocityUnits::pct, false);}//275
     else {
       ArmMotor.stop();
     }
+  
+  
+    if(Controller1.ButtonX.pressing() && armGrabbing == true && XPreviouslyPressed == false) { //If L2 is pressed while the limiter is 1
+      ArmPneumatics.set(false);
+      armGrabbing = false;
+    }
+    else if(Controller1.ButtonX.pressing() && armGrabbing == false && XPreviouslyPressed == false) { //If L2 is pressed while the limiter is 1
+      ArmPneumatics.set(true);
+      armGrabbing = true;
+      ConveyorMotor.spinToPosition(ConveyorMotor.position(deg)+1000, deg, 60.0, velocityUnits::pct, false);
+      intakeActive = false;
+    }
+    
+
+
+
+  
+    if (Controller1.ButtonX.pressing()) {XPreviouslyPressed = true;}//keep track of whether R2 was pressed in the previous cycle
+    else {XPreviouslyPressed = false;}
+    if (Controller1.ButtonL2.pressing()) {L2PreviouslyPressed = true;}
+    else {L2PreviouslyPressed = false;}
+    if (Controller1.ButtonR2.pressing()) {R2PreviouslyPressed = true;}//keep track of whether R2 was pressed in the previous cycle
+    else {R2PreviouslyPressed = false;}
+    if (Controller1.ButtonA.pressing()) {APreviouslyPressed = true;}//keep track of whether R2 was pressed in the previous cycle
+    else {APreviouslyPressed = false;}
+
+    //ensure encoder is set properly
+    if (loopsSinceStart <= 3) {ArmMotor.spin(directionType::rev, 5, pct);}
+    else if (loopsSinceStart == 3) {ArmMotor.resetPosition();};
+    
     Brain.Screen.setCursor(1, 1);
     Brain.Screen.print("Controller Axis3 pct = %d  ", Controller1.Axis3.position(percent));
     Brain.Screen.setCursor(2, 1);
-    Brain.Screen.print("Controller Axis1 pct = %d  ", Controller1.Axis1.position(percent));
-    Brain.Screen.setCursor(3, 1);
-    Brain.Screen.print("Var Axis1 = %d  ", Axis1);
-    Brain.Screen.setCursor(4, 1);
-    Brain.Screen.print("Var Axis3 = %d  ", Axis3);
-    Brain.Screen.setCursor(5, 1);
-    Brain.Screen.print("lm2posdeg = %.2f    ", LeftMotor2.position(deg));//
+    Brain.Screen.print("lm2posdeg = %.2f    ", LeftMotor2.position(deg));
+    Controller1.Screen.setCursor(1, 1);
+    Controller1.Screen.print("targetPos: %d  ", targetPosition);
+    Controller1.Screen.setCursor(2, 1);
+    Controller1.Screen.print("armMotor Pos = %.2f    ", ArmMotor.position(deg));
+    Controller1.Screen.setCursor(3, 1);
+    Controller1.Screen.print("armMotor Pos = %.2f    ", ArmMotor.position(deg));
     wait(20, msec); // Sleep the task for a short amount of time to
                     // prevent wasted resources.
+    loopsSinceStart += 1;
   }
 }
 
