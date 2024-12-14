@@ -29,7 +29,7 @@ competition Competition;
 triport ThreeWirePort = vex::triport( vex::PORT22 );//goal hook
 digital_out GoalPneumatics = vex::digital_out(ThreeWirePort.H);
 digital_out LobsterPneumatics = vex::digital_out(ThreeWirePort.B);
-digital_out IntakePneumatics = vex::digital_out(ThreeWirePort.C);
+digital_out IntakePneumatics = vex::digital_out(ThreeWirePort.A);
 triport ThreeWirePortExtender = vex::triport( vex::PORT21 );
 digital_out ArmPneumatics = vex::digital_out(ThreeWirePortExtender.C);
 /*---------------------------------------------------------------------------*/
@@ -49,7 +49,6 @@ void resetMotorEncoders(void) {
   RightMotor2.resetPosition();
   RightMotor3.resetPosition();
   ConveyorMotor.resetPosition();
-  ArmMotor.resetPosition();
 };
 float distributeNormally (float input) {
   return std::pow(2.71828, -std::pow(((4*input)-2), 2));
@@ -57,6 +56,7 @@ float distributeNormally (float input) {
 float distributeParabolically (float input) {
   return (-4*std::pow((input-0.5), 2) + 1);
 };
+//distance, maxSpeed, fowards
 void MoveStraight(float distance, int maxSpeed, bool fowards) {
   resetMotorEncoders();
   //wheels are 4 inches in diamametere, times pi means curcumernce is 12.56636 in
@@ -114,8 +114,8 @@ void MoveStraight(float distance, int maxSpeed, bool fowards) {
     };
   }
 }
-
-void MoveTurning(int degrees, int maxSpeed, bool isturningright) {
+//degrees, maxSpeed, isTurningRight
+void MoveTurning(float degrees, int maxSpeed, bool isturningright) {
   resetMotorEncoders();
   //wheels are 4 inches in diamametere, times pi means curcumernce is 12.56636 in
   //wheel to wheel width is 14.75, time pi means one 360 degree turn is 46.34845 in covered
@@ -168,7 +168,7 @@ void MoveTurning(int degrees, int maxSpeed, bool isturningright) {
   }
   
 };
-void TurnWithRatio(int distance, int maxSpeed, float LeftToRightRatio, bool fowards) {
+void TurnWithRatio(float distance, int maxSpeed, float LeftToRightRatio, bool fowards) {
   resetMotorEncoders();
   //turn with ratio uses the ratio of left wheel power to right wheel power to determine direction
   //if LtoRratio is greater than 1, it turns right, less than one and it turns left
@@ -297,15 +297,22 @@ void autonomous(void) {
   RightMotor1.setStopping(hold);
   RightMotor2.setStopping(hold);
   RightMotor3.setStopping(hold);
+  ArmMotor.setStopping(hold);
+  OpticalSensor.setLightPower(100, percent);
   resetMotorEncoders();
   GoalPneumatics.set(true);
+  for (int i=0; i<10; i++) {
+    if (i<9) {ArmMotor.spin(directionType::rev, 5, pct);}
+    else if (i==9)  {resetMotorEncoders(); break;};
+    wait(20, msec);
+  };
   ////////////////////////////////////////////////////////////////////////////////
   /////////////////////////RED NEGATIVE SIDE 4-RING AUTO//////////////////////////
   ////////////////////////////////////////////////////////////////////////////////
   //6 points, preload + negative side stack + 2 center stacks; touches ladder
   //13.5 seconds
   //slot 1
-  MoveStraight(18, 70, false);//move out to get the goal
+  /*MoveStraight(18, 70, false);//move out to get the goal
   GoalPneumatics.set(false);//grab it
   ConveyorMotor.spin(directionType::rev, 100, velocityUnits::pct);//start spinning the conveyor
   MoveTurning(60, 50, true);//turn towards the first stack
@@ -319,7 +326,7 @@ void autonomous(void) {
   MoveStraight(5, 70, false);//reverse
   MoveTurning(75, 50, true);//turn towards the ladder
   MoveStraight(40, 70, true);//bump in to it
-  
+  */
   ////////////////////////////////////////////////////////////////////////////////
   ////////////////////////BLUE NEGATIVE SIDE 4-RING AUTO//////////////////////////
   ////////////////////////////////////////////////////////////////////////////////
@@ -382,15 +389,63 @@ void autonomous(void) {
 ////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////SKILLS///////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
-/*ConveyorMotor.spin(directionType::rev, 100, velocityUnits::pct);
-wait(2, sec);
-MoveStraight(12, 60, true);
-MoveTurning(90, 50, false);
-MoveStraight(13, 60, false);
-GoalPneumatics.set(false);
-MoveTurning(180, 50, false);
-MoveStraight(50, 60, true);
-*/
+/*ArmMotor.spinToPosition(330, deg, 80.0, velocityUnits::pct, true);
+ArmMotor.spinToPosition(2, deg, 60.0, velocityUnits::pct, true);//place ring*/
+
+ArmMotor.setStopping(brake);
+ConveyorMotor.spin(directionType::rev, 100, velocityUnits::pct);//start conveyor so it's running ambiently
+wait(1000, msec);
+MoveStraight(12.5, 30, true);//move foward
+MoveTurning(90, 50, false);//turn (backwards) towards goal 
+MoveStraight(15, 50, false);//drive in to it
+GoalPneumatics.set(false);//grab it
+MoveStraight(8, 30, false);//drive a little further so we're at the interection
+MoveTurning(85, 30, true);//turn towareds a ring
+MoveStraight(27, 60, true);//drive in to it
+MoveStraight(2, 30, false);//move back a little to make sure we're centered
+MoveTurning(80, 30, true);//turn towareds another ring
+MoveStraight(24, 60, true);//drive in to it
+MoveTurning(84, 50, true);//turn back towards the wall for the 2 rings
+//drive for a time instead of distance because we might hit the wall
+LeftMotor1.spin(directionType::fwd, 45, velocityUnits::pct); 
+LeftMotor2.spin(directionType::fwd, 45, velocityUnits::pct); 
+LeftMotor3.spin(directionType::fwd, 45, velocityUnits::pct);
+RightMotor1.spin(directionType::fwd, 45, velocityUnits::pct);
+RightMotor2.spin(directionType::fwd, 45, velocityUnits::pct);
+RightMotor3.spin(directionType::fwd, 45, velocityUnits::pct);
+wait(1500, msec);
+resetMotorEncoders();//just beacuse
+MoveStraight(6, 40, false);//back up a bit
+MoveTurning(110, 50, true);//turn towards the corner
+MoveStraight(7, 50, false);//back in to it slightly
+GoalPneumatics.set(true);//release goal
+MoveStraight(11, 40, true);//drive out to the tile line
+MoveTurning(142, 20, true);//turn (backwards) towards the other side
+MoveStraight(58, 50, false);///drive over there
+///same for other side
+////////////////////////////////////////////
+GoalPneumatics.set(false);//grab it
+MoveStraight(8, 30, false);//drive a little further so we're at the interection*/
+MoveTurning(85, 30, false);//turn towareds a ring
+MoveStraight(27, 60, true);//drive in to it
+MoveStraight(2, 30, false);//move back a little to make sure we're centered
+MoveTurning(80, 30, false);//turn towareds another ring
+MoveStraight(24, 60, true);//drive in to it
+MoveTurning(84, 50, false);//turn back towards the wall for the 2 rings
+//drive for a time instead of distance because we might hit the wall
+LeftMotor1.spin(directionType::fwd, 45, velocityUnits::pct); 
+LeftMotor2.spin(directionType::fwd, 45, velocityUnits::pct); 
+LeftMotor3.spin(directionType::fwd, 45, velocityUnits::pct);
+RightMotor1.spin(directionType::fwd, 45, velocityUnits::pct);
+RightMotor2.spin(directionType::fwd, 45, velocityUnits::pct);
+RightMotor3.spin(directionType::fwd, 45, velocityUnits::pct);
+wait(1500, msec);
+resetMotorEncoders();//just beacuse
+MoveStraight(6, 40, false);//back up a bit
+MoveTurning(110, 50, false);//turn towards the corner
+MoveStraight(7, 70, false);//back in to it slightly
+GoalPneumatics.set(true);//release goal
+
 }
 
 
@@ -412,20 +467,26 @@ void usercontrol(void) {
   RightMotor2.setStopping(coast);
   RightMotor3.setStopping(coast);
   ArmMotor.setStopping(hold);
-  // User control code here, inside the loop
+  OpticalSensor.setLightPower(100, percent);
+
   int leftsidepower;
   int rightsidepower;
   float FBsensitivity = 1.0;
-  float LRsensitivity = 0.7; 
-  int loopsSinceStart = 0;
-  int armDelayTimer = -1;
-  bool goalintakeopen = false;
+  float LRsensitivity = 0.6; 
+  int timer[4] = {//any timer not being used is set to -1
+    0, //loops since start
+    -1,//arm grabbing delay timer (loops since ring grabed)
+    -1,//optical sensor delay (loops since ring seen by optical sensor)
+    -1 //rehomming timer
+  };
+  bool goalintakeopen = true;
+  GoalPneumatics.set(true);
   bool armGrabbing = false;
   bool L2PreviouslyPressed = false;
   bool APreviouslyPressed = false;
   bool XPreviouslyPressed = false;
   bool R2PreviouslyPressed = false;
-  bool intakeActive = false;
+  bool intakeActive = true; //false;
   enum ArmPosition {
     Resting,
     Ready,
@@ -442,10 +503,10 @@ void usercontrol(void) {
     float Axis1 = Controller1.Axis1.position(percent) > deadzonepct ? ((Controller1.Axis1.position(percent) - deadzonepct)*1.00/(100-deadzonepct))*100 : 
     Axis1 = Controller1.Axis1.position(percent) < -deadzonepct ? ((Controller1.Axis1.position(percent) + deadzonepct)*1.00/(100-deadzonepct))*100 : 0;
     //input power curve
-    /*double curveconstant = 1.05;
-    Axis1 = (100*(exponent(curveconstant, Axis1)-1))/(exponent(curveconstant, 100)-1);   
-    Axis3 = (100*(exponent(curveconstant, Axis3)-1))/(exponent(curveconstant, 100)-1);   
-    */
+    //double curveconstant = 1.05;
+    //Axis1 = (100*(exponent(curveconstant, Axis1)-1))/(exponent(curveconstant, 100)-1);   
+    //Axis3 = (100*(exponent(curveconstant, Axis3)-1))/(exponent(curveconstant, 100)-1);   
+    
 
     //sensitivity
     Axis1 *= LRsensitivity;
@@ -508,15 +569,17 @@ void usercontrol(void) {
     else {//otherwise do nothing
       ConveyorMotor.spin(directionType::fwd, 0, velocityUnits::pct);
     }
-    
-    if (armDelayTimer >= 0) {armDelayTimer += 1;};
+    if (timer[1] == 1) {
+      targetPosition = Up;
+      timer[1] = -1;  
+    } 
     if (Controller1.ButtonR2.pressing() && !R2PreviouslyPressed) {
       if (targetPosition == Resting) {targetPosition = Ready;}
       else if (targetPosition == Ready) {
-        armDelayTimer = 0;
+        timer[1] = 0;
         ArmPneumatics.set(true);
         armGrabbing = true;
-        ConveyorMotor.spinToPosition(ConveyorMotor.position(deg)+500, deg, 60.0, velocityUnits::pct, false);
+        ConveyorMotor.spinToPosition(ConveyorMotor.position(deg)+1000, deg, 60.0, velocityUnits::pct, false);
         intakeActive = false;
       }
       else if (targetPosition == Up) {
@@ -525,26 +588,21 @@ void usercontrol(void) {
         armGrabbing = false;
       }
     };
-    if (armDelayTimer == 1) {
-      targetPosition = Up;
-      armDelayTimer = -1;  
-    } 
+    
 
-
-
-    if (targetPosition == Resting) {ArmMotor.spinToPosition(0.0, deg, 60.0, velocityUnits::pct, false);}
-    else if (targetPosition == Ready) {ArmMotor.spinToPosition(92, deg, 80.0, velocityUnits::pct, false);}//65
-    else if (targetPosition == Up) {ArmMotor.spinToPosition(330, deg, 90.0, velocityUnits::pct, false);}//275
+    if (targetPosition == Resting) {ArmMotor.spinToPosition(0.0, deg, 60.0, velocityUnits::pct, false); ArmMotor.setStopping(brake);}
+    else if (targetPosition == Ready) {ArmMotor.spinToPosition(91.5, deg, 80.0, velocityUnits::pct, false);ArmMotor.setStopping(hold);}//65
+    else if (targetPosition == Up) {ArmMotor.spinToPosition(330, deg, 90.0, velocityUnits::pct, false);ArmMotor.setStopping(hold);}//275
     else {
       ArmMotor.stop();
     }
   
   
-    if(Controller1.ButtonX.pressing() && armGrabbing == true && XPreviouslyPressed == false) { //If L2 is pressed while the limiter is 1
+    if(Controller1.ButtonX.pressing() && armGrabbing == true && XPreviouslyPressed == false) {
       ArmPneumatics.set(false);
       armGrabbing = false;
     }
-    else if(Controller1.ButtonX.pressing() && armGrabbing == false && XPreviouslyPressed == false) { //If L2 is pressed while the limiter is 1
+    else if(Controller1.ButtonX.pressing() && armGrabbing == false && XPreviouslyPressed == false) {
       ArmPneumatics.set(true);
       armGrabbing = true;
       ConveyorMotor.spinToPosition(ConveyorMotor.position(deg)+1000, deg, 60.0, velocityUnits::pct, false);
@@ -552,7 +610,23 @@ void usercontrol(void) {
     }
     
 
-
+    //color sensing
+    //red is 12-17
+    //blue is 205-216
+    color color = OpticalSensor.color();
+    double hue = OpticalSensor.hue();
+    if (targetPosition == Ready) {
+      if ( (hue >= 12 && hue <= 17) || (hue >= 209 && hue <= 223) ) {//if we see one set the timer
+      timer[2] = 0;
+      }
+    }
+    if (timer[2] >= 1) {//when it's time actuate it
+      ArmPneumatics.set(true);
+      armGrabbing = true;
+      ConveyorMotor.spinToPosition(ConveyorMotor.position(deg)+1000, deg, 60.0, velocityUnits::pct, false);
+      intakeActive = false;
+      timer[2] = -1;
+    }
 
   
     if (Controller1.ButtonX.pressing()) {XPreviouslyPressed = true;}//keep track of whether R2 was pressed in the previous cycle
@@ -563,11 +637,21 @@ void usercontrol(void) {
     else {R2PreviouslyPressed = false;}
     if (Controller1.ButtonA.pressing()) {APreviouslyPressed = true;}//keep track of whether R2 was pressed in the previous cycle
     else {APreviouslyPressed = false;}
-
-    //ensure encoder is set properly
-    if (loopsSinceStart <= 3) {ArmMotor.spin(directionType::rev, 5, pct);}
-    else if (loopsSinceStart == 3) {ArmMotor.resetPosition();};
     
+    //ensure encoder is set properly
+    if (timer[0] <= 3) {ArmMotor.spin(directionType::rev, 5, pct);}
+    else if (timer[0] == 3) {ArmMotor.resetPosition();};
+    
+    ////////////////////////////////skills remember to remove for head-to-head
+
+    /*if (timer[0] > 4 && timer[0] < 10) {
+    ArmMotor.spin(directionType::fwd,90, pct);
+    GoalPneumatics.set(true);
+    goalintakeopen = true;
+    }*/
+    
+    ////////////////////////////////
+
     Brain.Screen.setCursor(1, 1);
     Brain.Screen.print("Controller Axis3 pct = %d  ", Controller1.Axis3.position(percent));
     Brain.Screen.setCursor(2, 1);
@@ -577,10 +661,17 @@ void usercontrol(void) {
     Controller1.Screen.setCursor(2, 1);
     Controller1.Screen.print("armMotor Pos = %.2f    ", ArmMotor.position(deg));
     Controller1.Screen.setCursor(3, 1);
-    Controller1.Screen.print("armMotor Pos = %.2f    ", ArmMotor.position(deg));
+    Controller1.Screen.print("debug value = %.3f    ", 1.0);
     wait(20, msec); // Sleep the task for a short amount of time to
                     // prevent wasted resources.
-    loopsSinceStart += 1;
+                
+    //for (int i : timer) {if (timer[i] >= 0) {timer[i] += 1;}};
+    if (timer[0] >= 0) {timer[0] = timer[0] + 1;};
+    if (timer[1] >= 0) {timer[1] = timer[1] + 1;};
+    if (timer[2] >= 0) {timer[2] = timer[2] + 1;};
+    if (timer[3] >= 0) {timer[3] = timer[3] + 1;};
+    
+
   }
 }
 

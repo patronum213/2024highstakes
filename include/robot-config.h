@@ -13,7 +13,7 @@ extern motor RightMotor2;
 extern motor RightMotor3;
 extern motor ConveyorMotor;
 extern motor ArmMotor;
-extern digital_out DigitalOutA;
+extern optical OpticalSensor;
 /**
  * Used to initialize code/tasks/devices added using tools in VEXcode Pro.
  * 
