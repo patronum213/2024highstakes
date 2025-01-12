@@ -34,7 +34,7 @@ triport ThreeWirePort = vex::triport( vex::PORT22 );//goal hook
 digital_out GoalPneumatics = vex::digital_out(ThreeWirePort.H);
 digital_out LobsterPneumatics = vex::digital_out(ThreeWirePort.B);
 digital_out IntakePneumatics = vex::digital_out(ThreeWirePort.A);
-digital_in LimitSwitch = vex::digital_in(ThreeWirePort.G);
+//digital_in LimitSwitch = vex::digital_in(ThreeWirePort.G);
 triport ThreeWirePortExtender = vex::triport( vex::PORT21 );
 digital_out ArmPneumatics = vex::digital_out(ThreeWirePortExtender.C);
 /*---------------------------------------------------------------------------*/
@@ -806,7 +806,7 @@ void usercontrol(void) {
     }
     else if (myTeamColor == Blue) {
       if (!(hue >= 209 && hue <= 223)) {//if i'm blue and it's not, discard it
-      targetPosition == Ready;
+      targetPosition = Ready;
       }
 
     }
@@ -839,13 +839,17 @@ void usercontrol(void) {
       ArmMotor.stop();
     }
   
-    if (LimitSwitch) {
+    /*if (LimitSwitch) {
       timer[3] = 0;
     };  
     if (timer[3] >= 0 && timer[3] <= 3) {
       ArmMotor.spin(directionType::rev, 5, pct);
     }
-    else if (timer[0] == 3) {ArmMotor.resetPosition();};
+    else if (timer[0] == 3) {
+      ArmMotor.resetPosition();
+      timer[3] = -1;
+    };
+    */
 
 
     if (Controller1.ButtonX.pressing()) {XPreviouslyPressed = true;}//keep track of whether R2 was pressed in the previous cycle
@@ -856,8 +860,8 @@ void usercontrol(void) {
     else {R2PreviouslyPressed = false;}
     if (Controller1.ButtonA.pressing()) {APreviouslyPressed = true;}//keep track of whether R2 was pressed in the previous cycle
     else {APreviouslyPressed = false;}
-    if (LimitSwitch) {LimitSwitchPreviouslyPressed = true;}
-    else {LimitSwitchPreviouslyPressed = false;}
+    /*if (LimitSwitch) {LimitSwitchPreviouslyPressed = true;}
+    else {LimitSwitchPreviouslyPressed = false;}*/
     
     //ensure encoder is set properly
     if (timer[0] <= 3) {ArmMotor.spin(directionType::rev, 5, pct);}
