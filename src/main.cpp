@@ -19,6 +19,10 @@
 #include "vex.h"
 #include <cmath>
 #include <iostream>
+#include <algorithm>
+#include <chrono>
+#include <ctime>
+#include <string>
 
 using namespace vex;
 
@@ -30,6 +34,7 @@ triport ThreeWirePort = vex::triport( vex::PORT22 );//goal hook
 digital_out GoalPneumatics = vex::digital_out(ThreeWirePort.H);
 digital_out LobsterPneumatics = vex::digital_out(ThreeWirePort.B);
 digital_out IntakePneumatics = vex::digital_out(ThreeWirePort.A);
+digital_in LimitSwitch = vex::digital_in(ThreeWirePort.G);
 triport ThreeWirePortExtender = vex::triport( vex::PORT21 );
 digital_out ArmPneumatics = vex::digital_out(ThreeWirePortExtender.C);
 /*---------------------------------------------------------------------------*/
@@ -292,6 +297,15 @@ void pre_auton(void) {
   // Example: clearing encoders, setting servo positions, ...
 }
 
+
+enum teamcolor {
+  Red,
+  Blue,
+  None
+};
+
+teamcolor myTeamColor = None;
+
 /*---------------------------------------------------------------------------*/
 /*                                                                           */
 /*                              Autonomous Task                              */
@@ -324,7 +338,8 @@ void autonomous(void) {
   //6 points, preload + negative side stack + 2 center stacks; touches ladder
   //13.5 seconds
   //slot 1
-  /*GoalPneumatics.set(false);
+  /*myTeamColor = Red;
+  GoalPneumatics.set(false);
   MoveStraight(13, 30, false);//get in line with the wall stake, also push the ring out of the way
   MoveTurning(90, 30, true);//turn (backwards) towards it
   LeftMotor1.spin(directionType::rev, 30, velocityUnits::pct);//push right up against
@@ -397,7 +412,8 @@ void autonomous(void) {
   //6 points, preload + negative side stack + 2 center stacks; touches ladder
   //13.5 seconds
   //slot 2
-  /*GoalPneumatics.set(false);
+  /*myTeamColor = Blue;
+  GoalPneumatics.set(false);
   MoveStraight(13, 30, false);//get in line with the wall stake, also push the ring out of the way
   MoveTurning(90, 30, false);//turn (backwards) towards it
   LeftMotor1.spin(directionType::rev, 30, velocityUnits::pct);//push right up against
@@ -454,7 +470,8 @@ void autonomous(void) {
   //6 points, preload on alliance stake + middle inverted stack + positive side stack
   //15 seconds
   //slot 3
-  /*GoalPneumatics.set(false);
+  /*myTeamColor = Red;
+  GoalPneumatics.set(false);
   MoveStraight(13, 30, false);//get in line with the wall stake, also push the ring out of the way
   MoveTurning(90, 30, false);//turn (backwards) towards it
   LeftMotor1.spin(directionType::rev, 30, velocityUnits::pct);//push right up against
@@ -496,6 +513,7 @@ void autonomous(void) {
   //6 points, preload on alliance stake + middle inverted stack + positive side stack
   //15 seconds
   //slot 4
+  /*myTeamColor = Blue;
   GoalPneumatics.set(false);
   MoveStraight(13, 30, false);//get in line with the wall stake, also push the ring out of the way
   MoveTurning(90, 30, true);//turn (backwards) towards it
@@ -531,11 +549,12 @@ void autonomous(void) {
   RightMotor1.stop(coast);
   RightMotor2.stop(coast);
   RightMotor3.stop(coast);
-  
+  */ 
 ////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////SKILLS///////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
-/*ArmMotor.setStopping(brake);
+myTeamColor = None;
+ArmMotor.setStopping(brake);
 ConveyorMotor.spin(directionType::rev, 100, velocityUnits::pct);//start conveyor so it's running ambiently
 wait(1000, msec);
 MoveStraight(12.5, 30, true);//move foward
@@ -558,10 +577,14 @@ RightMotor2.spin(directionType::fwd, 45, velocityUnits::pct);
 RightMotor3.spin(directionType::fwd, 45, velocityUnits::pct);
 wait(1500, msec);
 resetMotorEncoders();//just beacuse
-MoveStraight(6, 40, false);//back up a bit
+MoveStraight(15, 40, false);//back up to the intersection of the tile
+MoveTurning(85, 50, false);//turn to the ring to our left
+MoveStraight(15, 40, true);//move in and then back out
+MoveStraight(15, 40, false);
 MoveTurning(110, 50, true);//turn towards the corner
 MoveStraight(7, 50, false);//back in to it slightly
 GoalPneumatics.set(true);//release goal
+
 MoveStraight(11, 40, true);//drive out to the tile line
 MoveTurning(142, 20, true);//turn (backwards) towards the other side
 MoveStraight(58, 50, false);///drive over there
@@ -584,10 +607,14 @@ RightMotor2.spin(directionType::fwd, 45, velocityUnits::pct);
 RightMotor3.spin(directionType::fwd, 45, velocityUnits::pct);
 wait(1500, msec);
 resetMotorEncoders();//just beacuse
-MoveStraight(6, 40, false);//back up a bit
-MoveTurning(110, 50, false);//turn towards the corner
-MoveStraight(7, 70, false);//back in to it slightly
+MoveStraight(15, 40, false);//back up to the intersection of the tile
+MoveTurning(85, 50, false);//turn to the ring to our left
+MoveStraight(15, 40, true);//move in and then back out
+MoveStraight(15, 40, false);
+MoveTurning(110, 50, true);//turn towards the corner
+MoveStraight(7, 50, false);//back in to it slightly
 GoalPneumatics.set(true);//release goal
+
 MoveTurning(30, 50, false);
 MoveStraight(130, 100, true);
 MoveTurning(130, 50, false);
@@ -604,7 +631,7 @@ LeftMotor1.spin(directionType::fwd, 100, velocityUnits::pct);//push right up aga
   RightMotor1.stop(coast);
   RightMotor2.stop(coast);
   RightMotor3.stop(coast);
-*/
+
 }
 
 
@@ -619,6 +646,7 @@ LeftMotor1.spin(directionType::fwd, 100, velocityUnits::pct);//push right up aga
 /*---------------------------------------------------------------------------*/
 
 void usercontrol(void) {
+  myTeamColor = Red;
   LeftMotor1.setStopping(coast); 
   LeftMotor2.setStopping(coast); 
   LeftMotor3.setStopping(coast);
@@ -631,7 +659,7 @@ void usercontrol(void) {
   int leftsidepower;
   int rightsidepower;
   float FBsensitivity = 1.0;
-  float LRsensitivity = 0.6; 
+  float LRsensitivity = 0.6;
   int timer[4] = {//any timer not being used is set to -1
     0, //loops since start
     -1,//arm grabbing delay timer (loops since ring grabed)
@@ -749,13 +777,7 @@ void usercontrol(void) {
     };
     
 
-    if (targetPosition == Resting) {ArmMotor.spinToPosition(0.0, deg, 60.0, velocityUnits::pct, false); ArmMotor.setStopping(brake);}
-    else if (targetPosition == Ready) {ArmMotor.spinToPosition(91.5, deg, 80.0, velocityUnits::pct, false);ArmMotor.setStopping(hold);}//65
-    else if (targetPosition == Up) {ArmMotor.spinToPosition(330, deg, 90.0, velocityUnits::pct, false);ArmMotor.setStopping(hold);}//275
-    else {
-      ArmMotor.stop();
-    }
-  
+    
   
     if(Controller1.ButtonX.pressing() && armGrabbing == true && XPreviouslyPressed == false) {
       ArmPneumatics.set(false);
@@ -774,11 +796,33 @@ void usercontrol(void) {
     //blue is 205-216
     color color = OpticalSensor.color();
     double hue = OpticalSensor.hue();
+    //color sorting
+    if (myTeamColor == Red) {
+      if (!(hue >= 12 && hue <= 17)) {//if i'm red and it's not, discard it
+      targetPosition == Ready;
+      }
+
+    }
+    else if (myTeamColor == Blue) {
+      if (!(hue >= 209 && hue <= 223)) {//if i'm blue and it's not, discard it
+      targetPosition == Ready;
+      }
+
+    }
+    //automatic grabbing, color dependent
     if (targetPosition == Ready) {
-      if ( (hue >= 12 && hue <= 17) || (hue >= 209 && hue <= 223) ) {//if we see one set the timer
-      timer[2] = 0;
+      if (myTeamColor != Blue) {
+        if ((hue >= 12 && hue <= 17)) {//if i'm Red or None and we see a red ring, set a timer
+        timer[2] = 0;
+        }
+      }
+      else if (myTeamColor != Red) {
+        if ((hue >= 209 && hue <= 223)) {//if i'm either Blue or None and we see a blue ring, set a timer
+        timer[2] = 0;
+        }
       }
     }
+
     if (timer[2] >= 1) {//when it's time actuate it
       ArmPneumatics.set(true);
       armGrabbing = true;
@@ -787,6 +831,13 @@ void usercontrol(void) {
       timer[2] = -1;
     }
 
+    if (targetPosition == Resting) {ArmMotor.spinToPosition(0.0, deg, 60.0, velocityUnits::pct, false); ArmMotor.setStopping(brake);}
+    else if (targetPosition == Ready) {ArmMotor.spinToPosition(91.5, deg, 80.0, velocityUnits::pct, false);ArmMotor.setStopping(hold);}//65
+    else if (targetPosition == Up) {ArmMotor.spinToPosition(330, deg, 90.0, velocityUnits::pct, false);ArmMotor.setStopping(hold);}//275
+    else {
+      ArmMotor.stop();
+    }
+  
   
     if (Controller1.ButtonX.pressing()) {XPreviouslyPressed = true;}//keep track of whether R2 was pressed in the previous cycle
     else {XPreviouslyPressed = false;}
