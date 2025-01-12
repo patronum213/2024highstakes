@@ -673,6 +673,7 @@ void usercontrol(void) {
   bool APreviouslyPressed = false;
   bool XPreviouslyPressed = false;
   bool R2PreviouslyPressed = false;
+  bool LimitSwitchPreviouslyPressed = false;
   bool intakeActive = true; //false;
   enum ArmPosition {
     Resting,
@@ -838,20 +839,35 @@ void usercontrol(void) {
       ArmMotor.stop();
     }
   
-  
+    if (LimitSwitch) {
+      timer[3] = 0;
+    };  
+    if (timer[3] >= 0 && timer[3] <= 3) {
+      ArmMotor.spin(directionType::rev, 5, pct);
+    }
+    else if (timer[0] == 3) {ArmMotor.resetPosition();};
+
+
     if (Controller1.ButtonX.pressing()) {XPreviouslyPressed = true;}//keep track of whether R2 was pressed in the previous cycle
     else {XPreviouslyPressed = false;}
-    if (Controller1.ButtonL2.pressing()) {L2PreviouslyPressed = true;}
+    if (Controller1.ButtonL2.pressing()) {L2PreviouslyPressed = true;}//keep track of whether R2 was pressed in the previous cycle
     else {L2PreviouslyPressed = false;}
     if (Controller1.ButtonR2.pressing()) {R2PreviouslyPressed = true;}//keep track of whether R2 was pressed in the previous cycle
     else {R2PreviouslyPressed = false;}
     if (Controller1.ButtonA.pressing()) {APreviouslyPressed = true;}//keep track of whether R2 was pressed in the previous cycle
     else {APreviouslyPressed = false;}
+    if (LimitSwitch) {LimitSwitchPreviouslyPressed = true;}
+    else {LimitSwitchPreviouslyPressed = false;}
     
     //ensure encoder is set properly
     if (timer[0] <= 3) {ArmMotor.spin(directionType::rev, 5, pct);}
     else if (timer[0] == 3) {ArmMotor.resetPosition();};
     
+
+    
+
+
+
     ////////////////////////////////skills remember to remove for head-to-head
 
     /*if (timer[0] > 4 && timer[0] < 10) {
