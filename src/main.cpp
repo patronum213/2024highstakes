@@ -36,7 +36,7 @@ digital_out LobsterPneumatics = vex::digital_out(ThreeWirePort.B);
 digital_out ArmPneumatics = vex::digital_out(ThreeWirePort.A);
 //digital_in LimitSwitch = vex::digital_in(ThreeWirePort.G);
 triport ThreeWirePortExtender = vex::triport( vex::PORT21 );
-digital_out EjectorPneumatics = vex::digital_out(ThreeWirePortExtender.A);
+digital_out EjectorPneumatics = vex::digital_out(ThreeWirePortExtender.H);
 /*---------------------------------------------------------------------------*/
 /*                          Pre-Autonomous Functions                         */
 /*                                                                           */
