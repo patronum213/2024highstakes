@@ -33,10 +33,10 @@ competition Competition;
 triport ThreeWirePort = vex::triport( vex::PORT22 );//goal hook
 digital_out GoalPneumatics = vex::digital_out(ThreeWirePort.H);
 digital_out LobsterPneumatics = vex::digital_out(ThreeWirePort.B);
-digital_out IntakePneumatics = vex::digital_out(ThreeWirePort.A);
+digital_out ArmPneumatics = vex::digital_out(ThreeWirePort.A);
 //digital_in LimitSwitch = vex::digital_in(ThreeWirePort.G);
 triport ThreeWirePortExtender = vex::triport( vex::PORT21 );
-digital_out ArmPneumatics = vex::digital_out(ThreeWirePortExtender.C);
+digital_out EjectorPneumatics = vex::digital_out(ThreeWirePortExtender.A);
 /*---------------------------------------------------------------------------*/
 /*                          Pre-Autonomous Functions                         */
 /*                                                                           */
@@ -660,11 +660,13 @@ void usercontrol(void) {
   int rightsidepower;
   float FBsensitivity = 1.0;
   float LRsensitivity = 0.6;
-  int timer[4] = {//any timer not being used is set to -1
+  int timer[6] = {//any timer not being used is set to -1
     0, //loops since start
     -1,//arm grabbing delay timer (loops since ring grabed)
     -1,//optical sensor delay (loops since ring seen by optical sensor)
     -1 //rehomming timer
+    -1 //color sorting timer
+    -1 //color sorting restarting timer
   };
   bool goalintakeopen = true;
   GoalPneumatics.set(true);
@@ -683,6 +685,7 @@ void usercontrol(void) {
   ArmPosition targetPosition = Resting;
   resetMotorEncoders();
   while (true) {
+    
     //Driving Control
     //controller dead zone
     int deadzonepct  = 15;
@@ -708,6 +711,8 @@ void usercontrol(void) {
     RightMotor1.spin(directionType::fwd, rightsidepower, velocityUnits::pct);
     RightMotor2.spin(directionType::fwd, rightsidepower, velocityUnits::pct);
     RightMotor3.spin(directionType::fwd, rightsidepower, velocityUnits::pct);
+
+    OpticalSensor.setLightPower(100, percent);
 
     //goal pneumatics (toggled by L2)
     if(Controller1.ButtonL2.pressing() && goalintakeopen == true && L2PreviouslyPressed == false) { //If L2 is pressed while the limiter is 1
@@ -741,22 +746,7 @@ void usercontrol(void) {
     }
 
     
-    //first check if either of the slow buttons are being pressed
-    if(Controller1.ButtonR1.pressing() && Controller1.ButtonY.pressing()) {//out but slow
-      ConveyorMotor.spin(directionType::fwd, 25, velocityUnits::pct); 
-    }
-    else if(intakeActive && Controller1.ButtonY.pressing()) { //in but slow
-      ConveyorMotor.spin(directionType::rev, 25, velocityUnits::pct); 
-    }
-    else if(Controller1.ButtonR1.pressing()) {//check the out button first so outtaking overrides intaking
-      ConveyorMotor.spin(directionType::fwd, 100, velocityUnits::pct); 
-    }
-    else if(intakeActive) {//otherwise if the intake should be active, spin the motor
-      ConveyorMotor.spin(directionType::rev, 100, velocityUnits::pct); 
-    }
-    else {//otherwise do nothing
-      ConveyorMotor.spin(directionType::fwd, 0, velocityUnits::pct);
-    }
+    
     if (timer[1] == 1) {
       targetPosition = Up;
       timer[1] = -1;  
@@ -799,17 +789,23 @@ void usercontrol(void) {
     double hue = OpticalSensor.hue();
     //color sorting
     if (myTeamColor == Red) {
-      if (!(hue >= 12 && hue <= 17)) {//if i'm red and it's not, discard it
-      targetPosition == Ready;
+      if ((hue >= 200 && hue <= 225)) {//if i'm red and it's not, discard it
+      EjectorPneumatics = true;
+      timer[4] = 0;
       }
 
     }
     else if (myTeamColor == Blue) {
-      if (!(hue >= 209 && hue <= 223)) {//if i'm blue and it's not, discard it
-      targetPosition = Ready;
+      if ((hue >= 12 && hue <= 17)) {//if i'm blue and it's not, discard it
+      EjectorPneumatics = true;
+      timer[4] = 0;
       }
-
     }
+    if (timer[4] >= 3) {
+      EjectorPneumatics = false;
+      timer[4] = -1;
+    };
+
     //automatic grabbing, color dependent
     if (targetPosition == Ready) {
       if (myTeamColor != Blue) {
@@ -818,7 +814,7 @@ void usercontrol(void) {
         }
       }
       else if (myTeamColor != Red) {
-        if ((hue >= 209 && hue <= 223)) {//if i'm either Blue or None and we see a blue ring, set a timer
+        if ((hue >= 200 && hue <= 228)) {//if i'm either Blue or None and we see a blue ring, set a timer
         timer[2] = 0;
         }
       }
@@ -838,7 +834,25 @@ void usercontrol(void) {
     else {
       ArmMotor.stop();
     }
-  
+
+    //first check if either of the slow buttons are being pressed
+    if(Controller1.ButtonR1.pressing() && Controller1.ButtonY.pressing()) {//out but slow
+      ConveyorMotor.spin(directionType::fwd, 25, velocityUnits::pct); 
+    }
+    else if(intakeActive && Controller1.ButtonY.pressing()) { //in but slow
+      ConveyorMotor.spin(directionType::rev, 25, velocityUnits::pct); 
+    }
+    else if(Controller1.ButtonR1.pressing()) {//check the out button first so outtaking overrides intaking
+      ConveyorMotor.spin(directionType::fwd, 100, velocityUnits::pct); 
+    }
+    else if(intakeActive) {//otherwise if the intake should be active, spin the motor
+      ConveyorMotor.spin(directionType::rev, 100, velocityUnits::pct); 
+    }
+    else {//otherwise do nothing
+      ConveyorMotor.spin(directionType::fwd, 0, velocityUnits::pct);
+    }
+
+
     /*if (LimitSwitch) {
       timer[3] = 0;
     };  
@@ -892,7 +906,7 @@ void usercontrol(void) {
     Controller1.Screen.print("armMotor Pos = %.2f    ", ArmMotor.position(deg));
     Controller1.Screen.setCursor(3, 1);
     Controller1.Screen.print("debug value = %.3f    ", 1.0);
-    wait(20, msec); // Sleep the task for a short amount of time to
+    wait(1, msec); // Sleep the task for a short amount of time to
                     // prevent wasted resources.
                 
     //for (int i : timer) {if (timer[i] >= 0) {timer[i] += 1;}};
@@ -900,6 +914,8 @@ void usercontrol(void) {
     if (timer[1] >= 0) {timer[1] = timer[1] + 1;};
     if (timer[2] >= 0) {timer[2] = timer[2] + 1;};
     if (timer[3] >= 0) {timer[3] = timer[3] + 1;};
+    if (timer[4] >= 0) {timer[4] = timer[4] + 1;};
+    if (timer[5] >= 0) {timer[5] = timer[5] + 1;};
     
 
   }
