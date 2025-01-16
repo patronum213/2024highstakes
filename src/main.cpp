@@ -34,7 +34,7 @@ triport ThreeWirePort = vex::triport( vex::PORT22 );//goal hook
 digital_out GoalPneumatics = vex::digital_out(ThreeWirePort.H);
 digital_out LobsterPneumatics = vex::digital_out(ThreeWirePort.B);
 digital_out ArmPneumatics = vex::digital_out(ThreeWirePort.A);
-//digital_in LimitSwitch = vex::digital_in(ThreeWirePort.G);
+digital_in LimitSwitch = vex::digital_in(ThreeWirePort.G);
 triport ThreeWirePortExtender = vex::triport( vex::PORT21 );
 digital_out EjectorPneumatics = vex::digital_out(ThreeWirePortExtender.H);
 /*---------------------------------------------------------------------------*/
@@ -66,8 +66,8 @@ float distributeParabolically (float input) {
 //made for joystick curving, takes input of 0-1, works both ways
 float distributeExponentially (float input) {
   return (input > 0 ? 
-  (std::pow(1.05, 100*input)-1)/(std::pow(1.05, 100)-1):
-  -(std::pow(1.05, std::abs(100*input))-1)/(std::pow(1.05, 100)-1)
+  (std::pow(1.025, 100*input)-1)/(std::pow(1.025, 100)-1):
+  -(std::pow(1.025, std::abs(100*input))-1)/(std::pow(1.025, 100)-1)
   );
 };
 //distance, maxSpeed, fowards
@@ -556,8 +556,8 @@ void autonomous(void) {
 myTeamColor = None;
 ArmMotor.setStopping(brake);
 ConveyorMotor.spin(directionType::rev, 100, velocityUnits::pct);//start conveyor so it's running ambiently
-wait(1000, msec);
-MoveStraight(12.5, 30, true);//move foward
+wait(800, msec);
+MoveStraight(12.5, 40, true);//move foward
 MoveTurning(90, 50, false);//turn (backwards) towards goal 
 MoveStraight(15, 50, false);//drive in to it
 GoalPneumatics.set(false);//grab it
@@ -575,19 +575,36 @@ LeftMotor3.spin(directionType::fwd, 45, velocityUnits::pct);
 RightMotor1.spin(directionType::fwd, 45, velocityUnits::pct);
 RightMotor2.spin(directionType::fwd, 45, velocityUnits::pct);
 RightMotor3.spin(directionType::fwd, 45, velocityUnits::pct);
-wait(1500, msec);
+wait(1600, msec);
 resetMotorEncoders();//just beacuse
-MoveStraight(15, 40, false);//back up to the intersection of the tile
-MoveTurning(85, 50, false);//turn to the ring to our left
-MoveStraight(15, 40, true);//move in and then back out
-MoveStraight(15, 40, false);
-MoveTurning(110, 50, true);//turn towards the corner
-MoveStraight(7, 50, false);//back in to it slightly
+
+MoveStraight(12, 31, false);//back up to the intersection of the tile
+MoveTurning(83, 50, false);//turn to the ring to our left
+LeftMotor1.spin(directionType::fwd, 45, velocityUnits::pct); //move in and hit the wall (collecting the ring) 
+LeftMotor2.spin(directionType::fwd, 45, velocityUnits::pct); 
+LeftMotor3.spin(directionType::fwd, 45, velocityUnits::pct);
+RightMotor1.spin(directionType::fwd, 45, velocityUnits::pct);
+RightMotor2.spin(directionType::fwd, 45, velocityUnits::pct);
+RightMotor3.spin(directionType::fwd, 45, velocityUnits::pct);
+wait(800, msec);
+resetMotorEncoders();//just beacuse
+MoveStraight(16, 40, false);//then back out
+MoveTurning(130, 50, false);//turn towards the corner
+MoveStraight(14, 50, false);//back in to it slightly
 GoalPneumatics.set(true);//release goal
 
-MoveStraight(11, 40, true);//drive out to the tile line
-MoveTurning(142, 20, true);//turn (backwards) towards the other side
-MoveStraight(58, 50, false);///drive over there
+MoveStraight(9, 20, true);//drive out to the tile line
+MoveTurning(132, 40, true);//turn (backwards) towards the other side
+LeftMotor1.spin(directionType::fwd, 40, velocityUnits::pct); //bash against the wall to center ourselves 
+LeftMotor2.spin(directionType::fwd, 40, velocityUnits::pct); 
+LeftMotor3.spin(directionType::fwd, 40, velocityUnits::pct);
+RightMotor1.spin(directionType::fwd, 40, velocityUnits::pct);
+RightMotor2.spin(directionType::fwd, 40, velocityUnits::pct);
+RightMotor3.spin(directionType::fwd, 40, velocityUnits::pct);
+wait(1000, msec);
+resetMotorEncoders();//just beacuse
+MoveStraight(74, 50, false);///drive over there
+
 ///same for other side
 ////////////////////////////////////////////
 GoalPneumatics.set(false);//grab it
@@ -607,14 +624,21 @@ RightMotor2.spin(directionType::fwd, 45, velocityUnits::pct);
 RightMotor3.spin(directionType::fwd, 45, velocityUnits::pct);
 wait(1500, msec);
 resetMotorEncoders();//just beacuse
-MoveStraight(15, 40, false);//back up to the intersection of the tile
-MoveTurning(85, 50, false);//turn to the ring to our left
-MoveStraight(15, 40, true);//move in and then back out
-MoveStraight(15, 40, false);
-MoveTurning(110, 50, true);//turn towards the corner
-MoveStraight(7, 50, false);//back in to it slightly
+MoveStraight(12, 31, false);//back up to the intersection of the tile
+MoveTurning(83, 50, true);//turn to the ring to our left
+LeftMotor1.spin(directionType::fwd, 45, velocityUnits::pct); //move in and hit the wall (collecting the ring) 
+LeftMotor2.spin(directionType::fwd, 45, velocityUnits::pct); 
+LeftMotor3.spin(directionType::fwd, 45, velocityUnits::pct);
+RightMotor1.spin(directionType::fwd, 45, velocityUnits::pct);
+RightMotor2.spin(directionType::fwd, 45, velocityUnits::pct);
+RightMotor3.spin(directionType::fwd, 45, velocityUnits::pct);
+wait(800, msec);
+resetMotorEncoders();//just beacuse
+MoveStraight(16, 40, false);//then back out
+MoveTurning(130, 50, true);//turn towards the corner
+MoveStraight(14, 50, false);//back in to it slightly
 GoalPneumatics.set(true);//release goal
-
+/*
 MoveTurning(30, 50, false);
 MoveStraight(130, 100, true);
 MoveTurning(130, 50, false);
@@ -631,7 +655,7 @@ LeftMotor1.spin(directionType::fwd, 100, velocityUnits::pct);//push right up aga
   RightMotor1.stop(coast);
   RightMotor2.stop(coast);
   RightMotor3.stop(coast);
-
+/**/
 }
 
 
@@ -688,7 +712,7 @@ void usercontrol(void) {
     
     //Driving Control
     //controller dead zone
-    int deadzonepct  = 15;
+    int deadzonepct  = 10;
     float Axis3 = Controller1.Axis3.position(percent);
     float Axis1 = Controller1.Axis1.position(percent);
     float Axis3Dead = Axis3 > deadzonepct ? ((Axis3 - deadzonepct)*1.00/(100-deadzonepct))*100 : 
@@ -853,7 +877,7 @@ void usercontrol(void) {
     }
 
 
-    /*if (LimitSwitch) {
+    if (LimitSwitch) {
       timer[3] = 0;
     };  
     if (timer[3] >= 0 && timer[3] <= 3) {
@@ -863,7 +887,7 @@ void usercontrol(void) {
       ArmMotor.resetPosition();
       timer[3] = -1;
     };
-    */
+    
 
 
     if (Controller1.ButtonX.pressing()) {XPreviouslyPressed = true;}//keep track of whether R2 was pressed in the previous cycle
@@ -874,8 +898,8 @@ void usercontrol(void) {
     else {R2PreviouslyPressed = false;}
     if (Controller1.ButtonA.pressing()) {APreviouslyPressed = true;}//keep track of whether R2 was pressed in the previous cycle
     else {APreviouslyPressed = false;}
-    /*if (LimitSwitch) {LimitSwitchPreviouslyPressed = true;}
-    else {LimitSwitchPreviouslyPressed = false;}*/
+    if (LimitSwitch) {LimitSwitchPreviouslyPressed = true;}
+    else {LimitSwitchPreviouslyPressed = false;}
     
     //ensure encoder is set properly
     if (timer[0] <= 3) {ArmMotor.spin(directionType::rev, 5, pct);}
