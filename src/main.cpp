@@ -569,14 +569,14 @@ MoveTurning(80, 30, true);//turn towareds another ring
 MoveStraight(24, 60, true);//drive in to it
 MoveTurning(84, 50, true);//turn back towards the wall for the 2 rings
 //drive for a time instead of distance because we might hit the wall
-LeftMotor1.spin(directionType::fwd, 45, velocityUnits::pct); 
-LeftMotor2.spin(directionType::fwd, 45, velocityUnits::pct); 
+LeftMotor1.spin(directionType::fwd, 45, velocityUnits::pct);//this way the robot won't be stuck 
+LeftMotor2.spin(directionType::fwd, 45, velocityUnits::pct);//trying to reach some point outside of the field 
 LeftMotor3.spin(directionType::fwd, 45, velocityUnits::pct);
 RightMotor1.spin(directionType::fwd, 45, velocityUnits::pct);
 RightMotor2.spin(directionType::fwd, 45, velocityUnits::pct);
 RightMotor3.spin(directionType::fwd, 45, velocityUnits::pct);
 wait(1600, msec);
-resetMotorEncoders();//just beacuse
+resetMotorEncoders();//recalibrate beacuse we know that we'll be flat against it
 
 MoveStraight(12, 31, false);//back up to the intersection of the tile
 MoveTurning(83, 50, false);//turn to the ring to our left
@@ -586,8 +586,8 @@ LeftMotor3.spin(directionType::fwd, 45, velocityUnits::pct);
 RightMotor1.spin(directionType::fwd, 45, velocityUnits::pct);
 RightMotor2.spin(directionType::fwd, 45, velocityUnits::pct);
 RightMotor3.spin(directionType::fwd, 45, velocityUnits::pct);
-wait(800, msec);
-resetMotorEncoders();//just beacuse
+wait(800, msec);//wait while it runs
+resetMotorEncoders();//recalibrate beacuse we know that we'll be flat against it
 MoveStraight(16, 40, false);//then back out
 MoveTurning(130, 50, false);//turn towards the corner
 MoveStraight(14, 50, false);//back in to it slightly
@@ -602,7 +602,7 @@ RightMotor1.spin(directionType::fwd, 40, velocityUnits::pct);
 RightMotor2.spin(directionType::fwd, 40, velocityUnits::pct);
 RightMotor3.spin(directionType::fwd, 40, velocityUnits::pct);
 wait(1000, msec);
-resetMotorEncoders();//just beacuse
+resetMotorEncoders();//recalibrate beacuse we know that we'll be flat against it
 MoveStraight(74, 50, false);///drive over there
 
 ///same for other side
@@ -623,7 +623,7 @@ RightMotor1.spin(directionType::fwd, 45, velocityUnits::pct);
 RightMotor2.spin(directionType::fwd, 45, velocityUnits::pct);
 RightMotor3.spin(directionType::fwd, 45, velocityUnits::pct);
 wait(1500, msec);
-resetMotorEncoders();//just beacuse
+resetMotorEncoders();//recalibrate beacuse we know that we'll be flat against it
 MoveStraight(12, 31, false);//back up to the intersection of the tile
 MoveTurning(83, 50, true);//turn to the ring to our left
 LeftMotor1.spin(directionType::fwd, 45, velocityUnits::pct); //move in and hit the wall (collecting the ring) 
@@ -633,7 +633,7 @@ RightMotor1.spin(directionType::fwd, 45, velocityUnits::pct);
 RightMotor2.spin(directionType::fwd, 45, velocityUnits::pct);
 RightMotor3.spin(directionType::fwd, 45, velocityUnits::pct);
 wait(800, msec);
-resetMotorEncoders();//just beacuse
+resetMotorEncoders();//recalibrate beacuse we know that we'll be flat against it
 MoveStraight(16, 40, false);//then back out
 MoveTurning(130, 50, true);//turn towards the corner
 MoveStraight(14, 50, false);//back in to it slightly
@@ -811,38 +811,44 @@ void usercontrol(void) {
     //blue is 205-216
     color color = OpticalSensor.color();
     double hue = OpticalSensor.hue();
-    //color sorting
-    if (myTeamColor == Red) {
-      if ((hue >= 200 && hue <= 225)) {//if i'm red and it's not, discard it
-      EjectorPneumatics = true;
-      timer[4] = 0;
-      }
+    //all this should only occur if there's actually a ring in front of the sensor
+    if (OpticalSensor.isNearObject()) {
+      //color sorting
+      if (myTeamColor == Red) {
+        if ((hue >= 200 && hue <= 225)) {//if i'm red and it's not, discard it
+        EjectorPneumatics = true;
+        timer[4] = 0;
+        }
 
-    }
-    else if (myTeamColor == Blue) {
-      if ((hue >= 12 && hue <= 17)) {//if i'm blue and it's not, discard it
-      EjectorPneumatics = true;
-      timer[4] = 0;
+      }
+      else if (myTeamColor == Blue) {
+        if ((hue >= 12 && hue <= 17)) {//if i'm blue and it's not, discard it
+        EjectorPneumatics = true;
+        timer[4] = 0;
+        }
       }
     }
     if (timer[4] >= 3) {
       EjectorPneumatics = false;
       timer[4] = -1;
     };
-
-    //automatic grabbing, color dependent
-    if (targetPosition == Ready) {
-      if (myTeamColor != Blue) {
-        if ((hue >= 12 && hue <= 17)) {//if i'm Red or None and we see a red ring, set a timer
-        timer[2] = 0;
+    //the same for this
+    if (OpticalSensor.isNearObject()) {
+      //automatic grabbing, color dependent
+      if (targetPosition == Ready) {
+        if (myTeamColor != Blue) {
+          if ((hue >= 12 && hue <= 17)) {//if i'm Red or None and we see a red ring, set a timer
+          timer[2] = 0;
+          }
         }
-      }
-      else if (myTeamColor != Red) {
-        if ((hue >= 200 && hue <= 228)) {//if i'm either Blue or None and we see a blue ring, set a timer
-        timer[2] = 0;
+        else if (myTeamColor != Red) {
+          if ((hue >= 200 && hue <= 228)) {//if i'm either Blue or None and we see a blue ring, set a timer
+          timer[2] = 0;
+          }
         }
       }
     }
+
 
     if (timer[2] >= 1) {//when it's time actuate it
       ArmPneumatics.set(true);
@@ -853,8 +859,8 @@ void usercontrol(void) {
     }
 
     if (targetPosition == Resting) {ArmMotor.spinToPosition(0.0, deg, 60.0, velocityUnits::pct, false); ArmMotor.setStopping(brake);}
-    else if (targetPosition == Ready) {ArmMotor.spinToPosition(91.5, deg, 80.0, velocityUnits::pct, false);ArmMotor.setStopping(hold);}//65
-    else if (targetPosition == Up) {ArmMotor.spinToPosition(330, deg, 90.0, velocityUnits::pct, false);ArmMotor.setStopping(hold);}//275
+    else if (targetPosition == Ready) {ArmMotor.spinToPosition(-91.5, deg, 80.0, velocityUnits::pct, false);ArmMotor.setStopping(hold);}//65
+    else if (targetPosition == Up) {ArmMotor.spinToPosition(-330, deg, 90.0, velocityUnits::pct, false);ArmMotor.setStopping(hold);}//275
     else {
       ArmMotor.stop();
     }
@@ -877,16 +883,16 @@ void usercontrol(void) {
     }
 
 
-    if (LimitSwitch) {
+    /*if (LimitSwitch) {
       timer[3] = 0;
     };  
     if (timer[3] >= 0 && timer[3] <= 3) {
-      ArmMotor.spin(directionType::rev, 5, pct);
+      ArmMotor.spin(directionType::fwd, 5, pct);
     }
     else if (timer[0] == 3) {
       ArmMotor.resetPosition();
       timer[3] = -1;
-    };
+    };*/
     
 
 
@@ -902,7 +908,7 @@ void usercontrol(void) {
     else {LimitSwitchPreviouslyPressed = false;}
     
     //ensure encoder is set properly
-    if (timer[0] <= 3) {ArmMotor.spin(directionType::rev, 5, pct);}
+    if (timer[0] <= 3) {ArmMotor.spin(directionType::fwd, 5, pct);}
     else if (timer[0] == 3) {ArmMotor.resetPosition();};
     
 
@@ -929,7 +935,7 @@ void usercontrol(void) {
     Controller1.Screen.setCursor(2, 1);
     Controller1.Screen.print("armMotor Pos = %.2f    ", ArmMotor.position(deg));
     Controller1.Screen.setCursor(3, 1);
-    Controller1.Screen.print("debug value = %.3f    ", 1.0);
+    Controller1.Screen.print("debug value = %d    ", OpticalSensor.isNearObject());
     wait(1, msec); // Sleep the task for a short amount of time to
                     // prevent wasted resources.
                 
