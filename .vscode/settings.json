@@ -27,6 +27,22 @@
 		"ratio": "cpp",
 		"streambuf": "cpp",
 		"type_traits": "cpp",
-		"typeinfo": "cpp"
+		"typeinfo": "cpp",
+		"array": "cpp",
+		"atomic": "cpp",
+		"cstddef": "cpp",
+		"deque": "cpp",
+		"unordered_map": "cpp",
+		"vector": "cpp",
+		"optional": "cpp",
+		"string_view": "cpp",
+		"fstream": "cpp",
+		"functional": "cpp",
+		"numeric": "cpp",
+		"sstream": "cpp",
+		"stdexcept": "cpp",
+		"system_error": "cpp",
+		"tuple": "cpp",
+		"utility": "cpp"
 	}
 }
