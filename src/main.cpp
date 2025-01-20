@@ -909,7 +909,7 @@ void usercontrol(void) {
     
     //ensure encoder is set properly
     if (timer[0] <= 3) {ArmMotor.spin(directionType::fwd, 5, pct);}
-    else if (timer[0] == 3) {ArmMotor.resetPosition();};
+    else if (timer[0] == 3) {ArmMotor.stop();ArmMotor.resetPosition();};
     
 
     
