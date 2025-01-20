@@ -226,105 +226,83 @@ void TurnWithRatio(float distance, int maxSpeed, double LeftToRightRatio, bool f
   //if LtoRratio is greater than 1, it turns right, less than one and it turns left
   //ratios should be given in fractions anyway to help keep track of turns 
   //TODO: switch this to pid for greater accuracy.
-  float distancerev = (distance/12.56636)*2.3333333332;
+  float distanceRev = (distance/12.56636)*2.3333333332;
   float leftSideMultiplier = 1;
   float rightSideMultiplier = 1;
     if (LeftToRightRatio > 1) {
-      rightSideMultiplier = 1/LeftToRightRatio;
       if (1/LeftToRightRatio <= 0.00001) {rightSideMultiplier = 0;}
-      if (fowards) {
-        while (LeftMotor2.position(rev) < distancerev) {
-        float distanceTraveledPct = (LeftMotor2.position(rev)/distancerev)*100.0;
-        float distributedSpeed = distributeParabolically(distanceTraveledPct/100.0)*100.0;
-        float ajustedSpeed = std::max((distributedSpeed * (maxSpeed/100.0)), 10.0);
-        
-        LeftMotor1.spin(directionType::fwd, ajustedSpeed*leftSideMultiplier, velocityUnits::pct); 
-        LeftMotor2.spin(directionType::fwd, ajustedSpeed*leftSideMultiplier, velocityUnits::pct); 
-        LeftMotor3.spin(directionType::fwd, ajustedSpeed*leftSideMultiplier, velocityUnits::pct);
-        RightMotor1.spin(directionType::fwd, ajustedSpeed*rightSideMultiplier, velocityUnits::pct);
-        RightMotor2.spin(directionType::fwd, ajustedSpeed*rightSideMultiplier, velocityUnits::pct);
-        RightMotor3.spin(directionType::fwd, ajustedSpeed*rightSideMultiplier, velocityUnits::pct);
-        if (LeftMotor2.position(rev) > distancerev) {
-          LeftMotor1.stop(); 
-          LeftMotor2.stop(); 
-          LeftMotor3.stop();
-          RightMotor1.stop();
-          RightMotor2.stop();
-          RightMotor3.stop();
-          }
-        };
-      }
-      else if (!fowards) {
-        while (LeftMotor2.position(rev) > -distancerev) {
-        float distanceTraveledPct = (LeftMotor2.position(rev)/-distancerev)*100.0;
-        float distributedSpeed = distributeParabolically(distanceTraveledPct/100.0)*100.0;
-        float ajustedSpeed = std::max((distributedSpeed * (maxSpeed/100.0)), 10.0);
-        LeftMotor1.spin(directionType::rev, ajustedSpeed*leftSideMultiplier, velocityUnits::pct); 
-        LeftMotor2.spin(directionType::rev, ajustedSpeed*leftSideMultiplier, velocityUnits::pct); 
-        LeftMotor3.spin(directionType::rev, ajustedSpeed*leftSideMultiplier, velocityUnits::pct);
-        RightMotor1.spin(directionType::rev, ajustedSpeed*rightSideMultiplier, velocityUnits::pct);
-        RightMotor2.spin(directionType::rev, ajustedSpeed*rightSideMultiplier, velocityUnits::pct);
-        RightMotor3.spin(directionType::rev, ajustedSpeed*rightSideMultiplier, velocityUnits::pct);
-        if (LeftMotor2.position(rev) < -distancerev) {
-          LeftMotor1.stop(); 
-          LeftMotor2.stop(); 
-          LeftMotor3.stop();
-          RightMotor1.stop();
-          RightMotor2.stop();
-          RightMotor3.stop();
-          }
-        };
-      }
+      else {rightSideMultiplier = 1/LeftToRightRatio;}
     }
     else if (LeftToRightRatio < 1) {
       leftSideMultiplier = LeftToRightRatio;
-      if (fowards) {
-        while (RightMotor2.position(rev) < distancerev) {
-        float distanceTraveledPct = (RightMotor2.position(rev)/distancerev)*100.0;
-        float distributedSpeed = distributeParabolically(distanceTraveledPct/100.0)*100.0;
-        float ajustedSpeed = std::max((distributedSpeed * (maxSpeed/100.0)), 10.0);
-        
-        LeftMotor1.spin(directionType::fwd, ajustedSpeed*leftSideMultiplier, velocityUnits::pct); 
-        LeftMotor2.spin(directionType::fwd, ajustedSpeed*leftSideMultiplier, velocityUnits::pct); 
-        LeftMotor3.spin(directionType::fwd, ajustedSpeed*leftSideMultiplier, velocityUnits::pct);
-        RightMotor1.spin(directionType::fwd, ajustedSpeed*rightSideMultiplier, velocityUnits::pct);
-        RightMotor2.spin(directionType::fwd, ajustedSpeed*rightSideMultiplier, velocityUnits::pct);
-        RightMotor3.spin(directionType::fwd, ajustedSpeed*rightSideMultiplier, velocityUnits::pct);
-        if (RightMotor2.position(rev) > distancerev) {
-          LeftMotor1.stop(); 
-          LeftMotor2.stop(); 
-          LeftMotor3.stop();
-          RightMotor1.stop();
-          RightMotor2.stop();
-          RightMotor3.stop();
-          }
-        };
-      }
-      else if (!fowards) {
-        while (RightMotor2.position(rev) > -distancerev) {
-        float distanceTraveledPct = (RightMotor2.position(rev)/-distancerev)*100.0;
-        float distributedSpeed = distributeParabolically(distanceTraveledPct/100.0)*100.0;
-        float ajustedSpeed = std::max((distributedSpeed * (maxSpeed/100.0)), 10.0);
-        LeftMotor1.spin(directionType::rev, ajustedSpeed*leftSideMultiplier, velocityUnits::pct); 
-        LeftMotor2.spin(directionType::rev, ajustedSpeed*leftSideMultiplier, velocityUnits::pct); 
-        LeftMotor3.spin(directionType::rev, ajustedSpeed*leftSideMultiplier, velocityUnits::pct);
-        RightMotor1.spin(directionType::rev, ajustedSpeed*rightSideMultiplier, velocityUnits::pct);
-        RightMotor2.spin(directionType::rev, ajustedSpeed*rightSideMultiplier, velocityUnits::pct);
-        RightMotor3.spin(directionType::rev, ajustedSpeed*rightSideMultiplier, velocityUnits::pct);
-        if (RightMotor2.position(rev) < -distancerev) {
-          LeftMotor1.stop(); 
-          LeftMotor2.stop(); 
-          LeftMotor3.stop();
-          RightMotor1.stop();
-          RightMotor2.stop();
-          RightMotor3.stop();
-          }
-        };
-      }
     };
-  
-  
-  
+    float distanceRevRight = distanceRev*rightSideMultiplier;
+    float distanceRevLeft = distanceRev*leftSideMultiplier;
+
+    
+
+    if (fowards) {
+      while ((LeftMotor2.position(rev) < distanceRevLeft or RightMotor2.position(rev) < distanceRevRight)) {
+      float distanceTraveledPctRight = (RightMotor2.position(rev)/distanceRevRight)*100.0;
+      float distributedSpeedRight = distributeParabolically(distanceTraveledPctRight/100.0)*100.0;
+      float ajustedSpeedRight = std::max((distributedSpeedRight * (maxSpeed/100.0)), 10.0);
+
+      float distanceTraveledPctLeft = (LeftMotor2.position(rev)/distanceRevLeft)*100.0;
+      float distributedSpeedLeft = distributeParabolically(distanceTraveledPctLeft/100.0)*100.0;
+      float ajustedSpeedLeft = std::max((distributedSpeedLeft * (maxSpeed/100.0)), 10.0);
+      
+      ajustedSpeedLeft *= leftSideMultiplier;
+      ajustedSpeedRight *= rightSideMultiplier;
+
+      LeftMotor1.spin(directionType::fwd, ajustedSpeedLeft, velocityUnits::pct); 
+      LeftMotor2.spin(directionType::fwd, ajustedSpeedLeft, velocityUnits::pct); 
+      LeftMotor3.spin(directionType::fwd, ajustedSpeedLeft, velocityUnits::pct);
+      RightMotor1.spin(directionType::fwd, ajustedSpeedRight, velocityUnits::pct);
+      RightMotor2.spin(directionType::fwd, ajustedSpeedRight, velocityUnits::pct);
+      RightMotor3.spin(directionType::fwd, ajustedSpeedRight, velocityUnits::pct);
+      if (LeftMotor2.position(rev) > distanceRev) {
+        LeftMotor1.stop(); 
+        LeftMotor2.stop(); 
+        LeftMotor3.stop();
+      }
+      if (RightMotor2.position(rev) > distanceRev) {
+        RightMotor1.stop(); 
+        RightMotor2.stop(); 
+        RightMotor3.stop();
+      }
+      };
+    }
+    else if (!fowards) {
+      while ((LeftMotor2.position(rev) > -distanceRevLeft or RightMotor2.position(rev) > -distanceRevRight)) {
+      float distanceTraveledPctRight = (RightMotor2.position(rev)/distanceRevRight)*100.0;
+      float distributedSpeedRight = distributeParabolically(distanceTraveledPctRight/100.0)*100.0;
+      float ajustedSpeedRight = std::max((distributedSpeedRight * (maxSpeed/100.0)), 10.0);
+
+      float distanceTraveledPctLeft = (LeftMotor2.position(rev)/distanceRevLeft)*100.0;
+      float distributedSpeedLeft = distributeParabolically(distanceTraveledPctLeft/100.0)*100.0;
+      float ajustedSpeedLeft = std::max((distributedSpeedLeft * (maxSpeed/100.0)), 10.0);
+      
+      ajustedSpeedLeft *= leftSideMultiplier;
+      ajustedSpeedRight *= rightSideMultiplier;
+
+      LeftMotor1.spin(directionType::rev, ajustedSpeedLeft, velocityUnits::pct); 
+      LeftMotor2.spin(directionType::rev, ajustedSpeedLeft, velocityUnits::pct); 
+      LeftMotor3.spin(directionType::rev, ajustedSpeedLeft, velocityUnits::pct);
+      RightMotor1.spin(directionType::rev, ajustedSpeedRight, velocityUnits::pct);
+      RightMotor2.spin(directionType::rev, ajustedSpeedRight, velocityUnits::pct);
+      RightMotor3.spin(directionType::rev, ajustedSpeedRight, velocityUnits::pct);
+      if (LeftMotor2.position(rev) < -distanceRev) {
+        LeftMotor1.stop(); 
+        LeftMotor2.stop(); 
+        LeftMotor3.stop();
+      }
+      if (RightMotor2.position(rev) < -distanceRev) {
+        RightMotor1.stop(); 
+        RightMotor2.stop(); 
+        RightMotor3.stop();
+      }
+      };
+    }  
 };
 void pre_auton(void) {
   // Initializing Robot Configuration. DO NOT REMOVE!
@@ -591,19 +569,22 @@ void autonomous(void) {
 ////////////////////////////////////////////////////////////////////////////////
 myTeamColor = None;
 ArmMotor.setStopping(brake);
-ConveyorMotor.spin(directionType::rev, 100, velocityUnits::pct);//start conveyor so it's running ambiently
+/*ConveyorMotor.spin(directionType::rev, 100, velocityUnits::pct);//start conveyor so it's running ambiently
 wait(700, msec);
 MoveStraight(12.5, 30, true);//move foward
 MoveTurning(90, 40, false);//turn (backwards) towards goal 
 MoveStraight(23, 50, false);//drive in to it
 GoalPneumatics.set(false);//grab it
+
 //MoveStraight(8, 30, false);//drive a little further so we're at the interection
 MoveTurning(90, 30, true);//turn towareds a ring
 MoveStraight(27, 60, true);//drive in to it
 MoveStraight(2, 30, false);//move back a little to make sure we're centered
+
 MoveTurning(90, 30, true);//turn towareds another ring
-MoveStraight(15, 60, true);//drive in to it
-MoveStraight(3, 30, false);//move back to be inline with the 2 rings
+MoveStraight(26, 60, true);//drive in to it
+MoveStraight(4, 30, false);//move back to be inline with the 2 rings
+
 MoveTurning(90, 40, true);//turn back towards the wall for the rings
 //drive for a time instead of distance because we might hit the wall
 LeftMotor1.spin(directionType::fwd, 45, velocityUnits::pct);//this way the robot won't be stuck 
@@ -617,20 +598,20 @@ resetMotorEncoders();//recalibrate beacuse we know that we'll be flat against it
 
 MoveStraight(12, 31, false);//back up to the intersection of the tile
 MoveTurning(90, 50, false);//turn to the ring to our left
-LeftMotor1.spin(directionType::fwd, 45, velocityUnits::pct); //move in and hit the wall (collecting the ring) 
+LeftMotor1.spin(directionType::fwd, 45, velocityUnits::pct);//move in and hit the wall (collecting the ring) 
 LeftMotor2.spin(directionType::fwd, 45, velocityUnits::pct); 
 LeftMotor3.spin(directionType::fwd, 45, velocityUnits::pct);
 RightMotor1.spin(directionType::fwd, 45, velocityUnits::pct);
 RightMotor2.spin(directionType::fwd, 45, velocityUnits::pct);
 RightMotor3.spin(directionType::fwd, 45, velocityUnits::pct);
-wait(800, msec);//wait while it runs
+wait(650, msec);//wait while it runs
 resetMotorEncoders();//recalibrate beacuse we know that we'll be flat against it
 MoveStraight(16, 40, false);//then back out
 MoveTurning(135, 50, false);//turn towards the corner
-MoveStraight(16, 50, false);//back in to it slightly
+MoveStraight(17, 50, false);//back in to it slightly
 GoalPneumatics.set(true);//release goal
 
-MoveStraight(7, 20, true);//drive out to the tile line
+MoveStraight(10, 20, true);//drive out to the tile line
 MoveTurning(132, 40, true);//turn (backwards) towards the other side
 LeftMotor1.spin(directionType::fwd, 40, velocityUnits::pct); //bash against the wall to center ourselves 
 LeftMotor2.spin(directionType::fwd, 40, velocityUnits::pct); 
@@ -641,58 +622,81 @@ RightMotor3.spin(directionType::fwd, 40, velocityUnits::pct);
 wait(1000, msec);
 resetMotorEncoders();//recalibrate beacuse we know that we'll be flat against it
 
-MoveStraight(74, 90, false);///drive over there
+MoveStraight(83, 90, false);///drive over there
 
 ///same for other side
 ////////////////////////////////////////////
-GoalPneumatics.set(false);//grab it
-MoveStraight(8, 30, false);//drive a little further so we're at the interection
-MoveTurning(85, 30, false);//turn towareds a ring
+GoalPneumatics.set(false);//grab the other goal
+
+MoveTurning(90, 30, false);//turn towareds a ring
 MoveStraight(27, 60, true);//drive in to it
 MoveStraight(2, 30, false);//move back a little to make sure we're centered
-MoveTurning(80, 30, false);//turn towareds another ring
-MoveStraight(24, 60, true);//drive in to it
-MoveTurning(84, 50, false);//turn back towards the wall for the 2 rings
+
+MoveTurning(90, 30, false);//turn towareds another ring
+MoveStraight(26, 60, true);//drive in to it
+MoveStraight(4, 30, false);//move back to be inline with the 2 rings
+
+MoveTurning(90, 40, false);//turn back towards the wall for the rings
 //drive for a time instead of distance because we might hit the wall
-LeftMotor1.spin(directionType::fwd, 45, velocityUnits::pct); 
-LeftMotor2.spin(directionType::fwd, 45, velocityUnits::pct); 
+LeftMotor1.spin(directionType::fwd, 45, velocityUnits::pct);//this way the robot won't be stuck 
+LeftMotor2.spin(directionType::fwd, 45, velocityUnits::pct);//trying to reach some point outside of the field 
 LeftMotor3.spin(directionType::fwd, 45, velocityUnits::pct);
 RightMotor1.spin(directionType::fwd, 45, velocityUnits::pct);
 RightMotor2.spin(directionType::fwd, 45, velocityUnits::pct);
 RightMotor3.spin(directionType::fwd, 45, velocityUnits::pct);
-wait(1500, msec);
+wait(1600, msec);
 resetMotorEncoders();//recalibrate beacuse we know that we'll be flat against it
+
 MoveStraight(12, 31, false);//back up to the intersection of the tile
-MoveTurning(83, 50, true);//turn to the ring to our left
-LeftMotor1.spin(directionType::fwd, 45, velocityUnits::pct); //move in and hit the wall (collecting the ring) 
+MoveTurning(90, 50, true);//turn to the ring to our left
+LeftMotor1.spin(directionType::fwd, 45, velocityUnits::pct);//move in and hit the wall (collecting the ring) 
 LeftMotor2.spin(directionType::fwd, 45, velocityUnits::pct); 
 LeftMotor3.spin(directionType::fwd, 45, velocityUnits::pct);
 RightMotor1.spin(directionType::fwd, 45, velocityUnits::pct);
 RightMotor2.spin(directionType::fwd, 45, velocityUnits::pct);
 RightMotor3.spin(directionType::fwd, 45, velocityUnits::pct);
-wait(800, msec);
+wait(650, msec);//wait while it runs
 resetMotorEncoders();//recalibrate beacuse we know that we'll be flat against it
 MoveStraight(16, 40, false);//then back out
-MoveTurning(130, 50, true);//turn towards the corner
-MoveStraight(14, 50, false);//back in to it slightly
+MoveTurning(135, 50, true);//turn towards the corner
+MoveStraight(17, 50, false);//back in to it slightly
 GoalPneumatics.set(true);//release goal
-/*
-MoveTurning(30, 50, false);
-MoveStraight(130, 100, true);
-MoveTurning(130, 50, false);
-LeftMotor1.spin(directionType::fwd, 100, velocityUnits::pct);//push right up against
-  LeftMotor2.spin(directionType::fwd, 100, velocityUnits::pct); 
-  LeftMotor3.spin(directionType::fwd, 100, velocityUnits::pct);
-  RightMotor1.spin(directionType::fwd, 100, velocityUnits::pct);
-  RightMotor2.spin(directionType::fwd, 100, velocityUnits::pct);
-  RightMotor3.spin(directionType::fwd, 100, velocityUnits::pct);
-  wait(2000, msec);
-  LeftMotor1.stop(coast);//push right up against
-  LeftMotor2.stop(coast); 
-  LeftMotor3.stop(coast);
-  RightMotor1.stop(coast);
-  RightMotor2.stop(coast);
-  RightMotor3.stop(coast);
+*/
+///driver to the other side of the field
+////////////////////////////////////////////
+MoveTurning(25, 40, false);
+MoveStraight(50, 90, true);
+TurnWithRatio(35, 40, 1.3, true);
+
+
+
+MoveStraight(22, 40, true);
+/*while (LeftMotor2.position(rev) < (25//12.56636)*2.3333333332) {
+    float distanceTraveledPct = (LeftMotor2.position(rev)/distancerev)*100.0;
+    float distributedSpeed = distributeParabolically(distanceTraveledPct/100.0)*100.0;
+    float ajustedSpeed = std::max((distributedSpeed * (maxSpeed/100.0)), 10.0);
+    LeftMotor1.spin(directionType::fwd, ajustedSpeed, velocityUnits::pct); 
+    LeftMotor2.spin(directionType::fwd, ajustedSpeed, velocityUnits::pct); 
+    LeftMotor3.spin(directionType::fwd, ajustedSpeed, velocityUnits::pct);
+    RightMotor1.spin(directionType::fwd, ajustedSpeed, velocityUnits::pct);
+    RightMotor2.spin(directionType::fwd, ajustedSpeed, velocityUnits::pct);
+    RightMotor3.spin(directionType::fwd, ajustedSpeed, velocityUnits::pct);
+    if (LeftMotor2.position(rev) > (25/12.56636)*2.3333333332) {
+      LeftMotor1.stop(); 
+      LeftMotor2.stop(); 
+      LeftMotor3.stop();
+      RightMotor1.stop();
+      RightMotor2.stop();
+      RightMotor3.stop();
+      }
+    };
+*/
+
+
+
+MoveTurning(180, 30, false);
+MoveStraight(6, 40, false);
+GoalPneumatics.set(false);
 /**/
 }
 
