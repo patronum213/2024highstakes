@@ -569,9 +569,9 @@ void autonomous(void) {
 ////////////////////////////////////////////////////////////////////////////////
 myTeamColor = None;
 ArmMotor.setStopping(brake);
-/*ConveyorMotor.spin(directionType::rev, 100, velocityUnits::pct);//start conveyor so it's running ambiently
-wait(700, msec);
-MoveStraight(12.5, 30, true);//move foward
+ConveyorMotor.spin(directionType::rev, 100, velocityUnits::pct);//start conveyor so it's running ambiently
+wait(300, msec);
+MoveStraight(12, 30, true);//move foward
 MoveTurning(90, 40, false);//turn (backwards) towards goal 
 MoveStraight(23, 50, false);//drive in to it
 GoalPneumatics.set(false);//grab it
@@ -582,8 +582,8 @@ MoveStraight(27, 60, true);//drive in to it
 MoveStraight(2, 30, false);//move back a little to make sure we're centered
 
 MoveTurning(90, 30, true);//turn towareds another ring
-MoveStraight(26, 60, true);//drive in to it
-MoveStraight(4, 30, false);//move back to be inline with the 2 rings
+MoveStraight(18.5, 60, true);//drive in to it
+//MoveStraight(2, 30, false);//move back to be inline with the 2 rings
 
 MoveTurning(90, 40, true);//turn back towards the wall for the rings
 //drive for a time instead of distance because we might hit the wall
@@ -593,7 +593,7 @@ LeftMotor3.spin(directionType::fwd, 45, velocityUnits::pct);
 RightMotor1.spin(directionType::fwd, 45, velocityUnits::pct);
 RightMotor2.spin(directionType::fwd, 45, velocityUnits::pct);
 RightMotor3.spin(directionType::fwd, 45, velocityUnits::pct);
-wait(1600, msec);
+wait(1700, msec);
 resetMotorEncoders();//recalibrate beacuse we know that we'll be flat against it
 
 MoveStraight(12, 31, false);//back up to the intersection of the tile
@@ -611,18 +611,18 @@ MoveTurning(135, 50, false);//turn towards the corner
 MoveStraight(17, 50, false);//back in to it slightly
 GoalPneumatics.set(true);//release goal
 
-MoveStraight(10, 20, true);//drive out to the tile line
-MoveTurning(132, 40, true);//turn (backwards) towards the other side
-LeftMotor1.spin(directionType::fwd, 40, velocityUnits::pct); //bash against the wall to center ourselves 
-LeftMotor2.spin(directionType::fwd, 40, velocityUnits::pct); 
-LeftMotor3.spin(directionType::fwd, 40, velocityUnits::pct);
-RightMotor1.spin(directionType::fwd, 40, velocityUnits::pct);
-RightMotor2.spin(directionType::fwd, 40, velocityUnits::pct);
-RightMotor3.spin(directionType::fwd, 40, velocityUnits::pct);
+MoveStraight(9, 20, true);//drive out to the tile line
+MoveTurning(135, 40, true);//turn (backwards) towards the other side
+LeftMotor1.spin(directionType::fwd, 45, velocityUnits::pct); //bash against the wall to center ourselves 
+LeftMotor2.spin(directionType::fwd, 45, velocityUnits::pct); 
+LeftMotor3.spin(directionType::fwd, 45, velocityUnits::pct);
+RightMotor1.spin(directionType::fwd, 45, velocityUnits::pct);
+RightMotor2.spin(directionType::fwd, 45, velocityUnits::pct);
+RightMotor3.spin(directionType::fwd, 45, velocityUnits::pct);
 wait(1000, msec);
 resetMotorEncoders();//recalibrate beacuse we know that we'll be flat against it
 
-MoveStraight(83, 90, false);///drive over there
+MoveStraight(83, 100, false);///drive over there
 
 ///same for other side
 ////////////////////////////////////////////
@@ -633,8 +633,8 @@ MoveStraight(27, 60, true);//drive in to it
 MoveStraight(2, 30, false);//move back a little to make sure we're centered
 
 MoveTurning(90, 30, false);//turn towareds another ring
-MoveStraight(26, 60, true);//drive in to it
-MoveStraight(4, 30, false);//move back to be inline with the 2 rings
+MoveStraight(18.5, 60, true);//drive in to it
+//MoveStraight(2, 30, false);//move back to be inline with the 2 rings
 
 MoveTurning(90, 40, false);//turn back towards the wall for the rings
 //drive for a time instead of distance because we might hit the wall
@@ -644,7 +644,7 @@ LeftMotor3.spin(directionType::fwd, 45, velocityUnits::pct);
 RightMotor1.spin(directionType::fwd, 45, velocityUnits::pct);
 RightMotor2.spin(directionType::fwd, 45, velocityUnits::pct);
 RightMotor3.spin(directionType::fwd, 45, velocityUnits::pct);
-wait(1600, msec);
+wait(1700, msec);
 resetMotorEncoders();//recalibrate beacuse we know that we'll be flat against it
 
 MoveStraight(12, 31, false);//back up to the intersection of the tile
@@ -661,27 +661,31 @@ MoveStraight(16, 40, false);//then back out
 MoveTurning(135, 50, true);//turn towards the corner
 MoveStraight(17, 50, false);//back in to it slightly
 GoalPneumatics.set(true);//release goal
-*/
-///driver to the other side of the field
+
+///driver to the far side of the field
 ////////////////////////////////////////////
-MoveTurning(25, 40, false);
-MoveStraight(50, 90, true);
-TurnWithRatio(35, 40, 1.3, true);
-
-
-
-MoveStraight(22, 40, true);
-/*while (LeftMotor2.position(rev) < (25//12.56636)*2.3333333332) {
-    float distanceTraveledPct = (LeftMotor2.position(rev)/distancerev)*100.0;
+MoveStraight(5, 30, true);
+MoveTurning(43, 30, false);
+MoveStraight(51, 90, true);
+MoveTurning(45, 30, true);
+resetMotorEncoders();
+float distanceRev = (40/12.56636)*2.3333333332;
+while (LeftMotor2.position(rev) < distanceRev) {
+    
+    if (OpticalSensor.isNearObject()) {
+      ConveyorMotor.stop();
+    };
+    
+    float distanceTraveledPct = (LeftMotor2.position(rev)/distanceRev)*100.0;
     float distributedSpeed = distributeParabolically(distanceTraveledPct/100.0)*100.0;
-    float ajustedSpeed = std::max((distributedSpeed * (maxSpeed/100.0)), 10.0);
+    float ajustedSpeed = std::max((distributedSpeed * (50/100.0)), 10.0);
     LeftMotor1.spin(directionType::fwd, ajustedSpeed, velocityUnits::pct); 
     LeftMotor2.spin(directionType::fwd, ajustedSpeed, velocityUnits::pct); 
     LeftMotor3.spin(directionType::fwd, ajustedSpeed, velocityUnits::pct);
     RightMotor1.spin(directionType::fwd, ajustedSpeed, velocityUnits::pct);
     RightMotor2.spin(directionType::fwd, ajustedSpeed, velocityUnits::pct);
     RightMotor3.spin(directionType::fwd, ajustedSpeed, velocityUnits::pct);
-    if (LeftMotor2.position(rev) > (25/12.56636)*2.3333333332) {
+    if (LeftMotor2.position(rev) > distanceRev) {
       LeftMotor1.stop(); 
       LeftMotor2.stop(); 
       LeftMotor3.stop();
@@ -690,13 +694,11 @@ MoveStraight(22, 40, true);
       RightMotor3.stop();
       }
     };
-*/
 
-
-
-MoveTurning(180, 30, false);
-MoveStraight(6, 40, false);
+MoveTurning(175, 30, true);
+MoveStraight(18, 40, false);
 GoalPneumatics.set(false);
+ConveyorMotor.spin(directionType::rev, 100, velocityUnits::pct);//score the ring we're holding
 /**/
 }
 
@@ -816,7 +818,7 @@ void usercontrol(void) {
     if (timer[1] == 1) {
       targetPosition = Up;
       timer[1] = -1;  
-    } 
+    }
     if (Controller1.ButtonR2.pressing() && !R2PreviouslyPressed) {
       if (targetPosition == Resting) {targetPosition = Ready;}
       else if (targetPosition == Ready) {
